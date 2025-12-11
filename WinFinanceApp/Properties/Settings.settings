@@ -1,0 +1,33 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="WinFinanceApp.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="SetupPath" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">c:\INI\setupFinance.ini</Value>
+    </Setting>
+    <Setting Name="WindowLocation" Type="System.Drawing.Point" Scope="User">
+      <Value Profile="(Default)">100, 100</Value>
+    </Setting>
+    <Setting Name="WindowSize" Type="System.Drawing.Size" Scope="User">
+      <Value Profile="(Default)">1710, 888</Value>
+    </Setting>
+    <Setting Name="FirstRun" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="Maximized" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="Minimized" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="SetupLenaROTH" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">c:\INI\setupFinanceLenaRoth.ini</Value>
+    </Setting>
+    <Setting Name="SetupLenaIRA" Type="System.String" Scope="User">
+      <Value Profile="(Default)">c:\INI\setupFinanceLena.ini</Value>
+    </Setting>
+    <Setting Name="SetupSamROTH" Type="System.String" Scope="User">
+      <Value Profile="(Default)">c:\INI\setupFinanceSamRoth.ini</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
