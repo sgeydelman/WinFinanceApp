@@ -33,6 +33,12 @@ namespace WinFinanceApp
             this.BtnLoadFile = new System.Windows.Forms.Button();
             this.grpBox = new System.Windows.Forms.GroupBox();
             this.dataGrid = new System.Windows.Forms.DataGridView();
+            this.lblTotalRebalance = new System.Windows.Forms.Label();
+            this.lblTotalTarget = new System.Windows.Forms.Label();
+            this.lblTotalCur = new System.Windows.Forms.Label();
+            this.lblTotalVal = new System.Windows.Forms.Label();
+            this.label7 = new System.Windows.Forms.Label();
+            this.timer_ui = new System.Windows.Forms.Timer(this.components);
             this.Description = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Key = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Value = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -40,12 +46,6 @@ namespace WinFinanceApp
             this.TargetPercent = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.RebalanceValue = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Deviation = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.lblTotalRebalance = new System.Windows.Forms.Label();
-            this.lblTotalTarget = new System.Windows.Forms.Label();
-            this.lblTotalCur = new System.Windows.Forms.Label();
-            this.lblTotalVal = new System.Windows.Forms.Label();
-            this.label7 = new System.Windows.Forms.Label();
-            this.timer_ui = new System.Windows.Forms.Timer(this.components);
             this.grpBox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGrid)).BeginInit();
             this.SuspendLayout();
@@ -107,57 +107,6 @@ namespace WinFinanceApp
             this.dataGrid.Size = new System.Drawing.Size(1149, 385);
             this.dataGrid.TabIndex = 20;
             this.dataGrid.CellFormatting += new System.Windows.Forms.DataGridViewCellFormattingEventHandler(this.dataGrid_CellFormatting);
-            // 
-            // Description
-            // 
-            this.Description.DataPropertyName = "Description";
-            this.Description.FillWeight = 200F;
-            this.Description.HeaderText = "Description";
-            this.Description.Name = "Description";
-            this.Description.ReadOnly = true;
-            this.Description.Width = 500;
-            // 
-            // Key
-            // 
-            this.Key.DataPropertyName = "Key";
-            this.Key.HeaderText = "Symbol";
-            this.Key.Name = "Key";
-            this.Key.ReadOnly = true;
-            // 
-            // Value
-            // 
-            this.Value.DataPropertyName = "Value";
-            this.Value.HeaderText = "Carrent $ Value";
-            this.Value.Name = "Value";
-            this.Value.ReadOnly = true;
-            // 
-            // CurPercent
-            // 
-            this.CurPercent.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-            this.CurPercent.DataPropertyName = "CurPercent";
-            this.CurPercent.HeaderText = "Current % of total";
-            this.CurPercent.Name = "CurPercent";
-            this.CurPercent.ReadOnly = true;
-            // 
-            // TargetPercent
-            // 
-            this.TargetPercent.DataPropertyName = "TargetPercent";
-            this.TargetPercent.HeaderText = "Target % of Total";
-            this.TargetPercent.Name = "TargetPercent";
-            this.TargetPercent.ReadOnly = true;
-            // 
-            // RebalanceValue
-            // 
-            this.RebalanceValue.DataPropertyName = "RebalanceValue";
-            this.RebalanceValue.HeaderText = "$ Value to Rebalance";
-            this.RebalanceValue.Name = "RebalanceValue";
-            this.RebalanceValue.ReadOnly = true;
-            // 
-            // Deviation
-            // 
-            this.Deviation.HeaderText = "Target Deviation %";
-            this.Deviation.Name = "Deviation";
-            this.Deviation.ReadOnly = true;
             // 
             // lblTotalRebalance
             // 
@@ -223,6 +172,57 @@ namespace WinFinanceApp
             // 
             this.timer_ui.Enabled = true;
             this.timer_ui.Tick += new System.EventHandler(this.timer_ui_Tick);
+            // 
+            // Description
+            // 
+            this.Description.DataPropertyName = "Description";
+            this.Description.FillWeight = 200F;
+            this.Description.HeaderText = "Description";
+            this.Description.Name = "Description";
+            this.Description.ReadOnly = true;
+            this.Description.Width = 500;
+            // 
+            // Key
+            // 
+            this.Key.DataPropertyName = "Key";
+            this.Key.HeaderText = "Symbol";
+            this.Key.Name = "Key";
+            this.Key.ReadOnly = true;
+            // 
+            // Value
+            // 
+            this.Value.DataPropertyName = "Value";
+            this.Value.HeaderText = "Carrent $ Value";
+            this.Value.Name = "Value";
+            this.Value.ReadOnly = true;
+            // 
+            // CurPercent
+            // 
+            this.CurPercent.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
+            this.CurPercent.DataPropertyName = "CurPercent";
+            this.CurPercent.HeaderText = "Current % of total";
+            this.CurPercent.Name = "CurPercent";
+            this.CurPercent.ReadOnly = true;
+            // 
+            // TargetPercent
+            // 
+            this.TargetPercent.DataPropertyName = "TargetPercent";
+            this.TargetPercent.HeaderText = "Target % of Total";
+            this.TargetPercent.Name = "TargetPercent";
+            this.TargetPercent.ReadOnly = true;
+            // 
+            // RebalanceValue
+            // 
+            this.RebalanceValue.DataPropertyName = "RebalanceValue";
+            this.RebalanceValue.HeaderText = "$ Value to Rebalance";
+            this.RebalanceValue.Name = "RebalanceValue";
+            this.RebalanceValue.ReadOnly = true;
+            // 
+            // Deviation
+            // 
+            this.Deviation.HeaderText = "Simualted rebalance result %";
+            this.Deviation.Name = "Deviation";
+            this.Deviation.ReadOnly = true;
             // 
             // FormIRA1
             // 

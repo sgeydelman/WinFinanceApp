@@ -86,7 +86,7 @@ namespace WinFinanceApp
     }
     public class TWRCalculationResult
     {
-        public string StartMonth { get; set; }
+        public string  StartMonth { get; set; }
         public int NumberOfMonths { get; set; }
         public Dictionary<string, double?> AccountTWRs { get; set; }
 
