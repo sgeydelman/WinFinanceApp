@@ -98,6 +98,7 @@ namespace WinFinanceApp
                     this.account = this.MyFinance.Account;
                     accountDictionary.Clear();
                     dataGrid.Rows.Clear();
+                    this.txtBondsC.Text = txtBondsT.Text = txtCashC.Text = txtCashT.Text = txtStocksC.Text = txtStocksT.Text = "?";
                 }
             }
             catch { }
@@ -215,6 +216,7 @@ namespace WinFinanceApp
 
                 accountDictionary.Clear();
                 dataGrid.Rows.Clear();
+                this.txtBondsC.Text = txtBondsT.Text = txtCashC.Text = txtCashT.Text = txtStocksC.Text = txtStocksT.Text = "?";
                 TotalCurValue = 0; TotalCurPercent = 0; TotalTargetPercent = 0;
                 this.openFileD.Title = "Load Data from CSV File";
 
@@ -319,157 +321,193 @@ namespace WinFinanceApp
                     }
 
                     grpBox.Text = string.Format("Account Monitor: {0}                   {1}", account, Path.GetFileName(this.openFileD.FileName));
-                }
+                    //  }
 
-                TotalCurValue = Math.Round(accountDictionary.Values.Sum(dp => dp.value), 1);
-                TotalTargetPercent = positions.Sum(pair => pair.Value);
-                this.lblTotalVal.Text = TotalCurValue.ToString();
-                this.lblTotalTarget.Text = TotalTargetPercent.ToString();
+                    TotalCurValue = Math.Round(accountDictionary.Values.Sum(dp => dp.value), 1);
+                    TotalTargetPercent = positions.Sum(pair => pair.Value);
+                    this.lblTotalVal.Text = TotalCurValue.ToString();
+                    this.lblTotalTarget.Text = TotalTargetPercent.ToString();
 
-                // --------------------------------------------------------------------
-                // START: CASH-AWARE REBALANCING LOGIC (Decoupled Phases)
-                // --------------------------------------------------------------------
+                    // --------------------------------------------------------------------
+                    // START: CASH-AWARE REBALANCING LOGIC (Decoupled Phases)
+                    // --------------------------------------------------------------------
 
-                double RawBuysNeeded = 0;
-                double RawSellsGenerated = 0;
-                Dictionary<string, double> RawAdjustments = new Dictionary<string, double>();
+                    double RawBuysNeeded = 0;
+                    double RawSellsGenerated = 0;
+                    Dictionary<string, double> RawAdjustments = new Dictionary<string, double>();
 
-                // --- Phase 1: Calculate Raw Rebalance Values (NO accountDictionary MODIFICATION) ---
-                foreach (var kvp in accountDictionary)
-                {
-                    AcountRecord record = kvp.Value;
-
-                    record.curPercent = record.value / TotalCurValue * 100;
-                    double rawRebalance = (record.targetPercent / 100.00 - record.curPercent / 100) * TotalCurValue;
-
-                    RawAdjustments.Add(kvp.Key, rawRebalance);
-
-                    if (rawRebalance > 0)
+                    // --- Phase 1: Calculate Raw Rebalance Values (NO accountDictionary MODIFICATION) ---
+                    foreach (var kvp in accountDictionary)
                     {
-                        RawBuysNeeded += rawRebalance;
-                    }
-                    else
-                    {
-                        RawSellsGenerated += rawRebalance;
-                    }
-                }
+                        AcountRecord record = kvp.Value;
 
-                double TotalFundsFromSales = Math.Abs(RawSellsGenerated);
+                        record.curPercent = record.value / TotalCurValue * 100;
+                        double rawRebalance = (record.targetPercent / 100.00 - record.curPercent / 100) * TotalCurValue;
 
-                // --- Phase 2: Calculate Final Scaled Rebalance Values (NO accountDictionary MODIFICATION) ---
+                        RawAdjustments.Add(kvp.Key, rawRebalance);
 
-                double scaleFactor = 1.0;
-                if (RawBuysNeeded > 0 && TotalFundsFromSales < RawBuysNeeded)
-                {
-                    scaleFactor = TotalFundsFromSales / RawBuysNeeded;
-                }
-
-                Dictionary<string, double> FinalRebalanceValues = new Dictionary<string, double>();
-                List<string> keysToUpdate = RawAdjustments.Keys.ToList();
-
-                foreach (var key in keysToUpdate)
-                {
-                    double rawRebalance = RawAdjustments[key];
-                    double finalValRebalance;
-
-                    if (rawRebalance > 0)
-                    {
-                        finalValRebalance = Math.Round(rawRebalance * scaleFactor, 3);
-                    }
-                    else
-                    {
-                        finalValRebalance = Math.Round(rawRebalance, 3);
+                        if (rawRebalance > 0)
+                        {
+                            RawBuysNeeded += rawRebalance;
+                        }
+                        else
+                        {
+                            RawSellsGenerated += rawRebalance;
+                        }
                     }
 
-                    FinalRebalanceValues.Add(key, finalValRebalance);
-                }
+                    double TotalFundsFromSales = Math.Abs(RawSellsGenerated);
 
-                // --------------------------------------------------------------------
-                // Phase 3: Apply Updates, Zero-Out, and Run Simulation
-                // --------------------------------------------------------------------
-                double newTotalValue = TotalCurValue; // Total remains constant as net rebalance will be zero.
+                    // --- Phase 2: Calculate Final Scaled Rebalance Values (NO accountDictionary MODIFICATION) ---
 
-                // Apply FinalRebalanceValues to the main dictionary
-                foreach (var kvp in accountDictionary.Keys.ToList())
-                {
-                    AcountRecord record = accountDictionary[kvp];
-
-                    if (FinalRebalanceValues.ContainsKey(kvp))
+                    double scaleFactor = 1.0;
+                    if (RawBuysNeeded > 0 && TotalFundsFromSales < RawBuysNeeded)
                     {
-                        record.valRebalance = FinalRebalanceValues[kvp];
+                        scaleFactor = TotalFundsFromSales / RawBuysNeeded;
                     }
 
-                    // Recalculate curPercent (optional, but ensures final struct state is accurate)
-                    record.curPercent = record.value / TotalCurValue * 100;
+                    Dictionary<string, double> FinalRebalanceValues = new Dictionary<string, double>();
+                    List<string> keysToUpdate = RawAdjustments.Keys.ToList();
 
-                    // SIMULATION: Calculate new value and percentage
-                    record.simulatedValue = record.value + record.valRebalance;
-                    record.simulatedPercent = (record.simulatedValue / newTotalValue) * 100.0;
+                    foreach (var key in keysToUpdate)
+                    {
+                        double rawRebalance = RawAdjustments[key];
+                        double finalValRebalance;
 
-                    accountDictionary[kvp] = record;
-                }
+                        if (rawRebalance > 0)
+                        {
+                            finalValRebalance = Math.Round(rawRebalance * scaleFactor, 3);
+                        }
+                        else
+                        {
+                            finalValRebalance = Math.Round(rawRebalance, 3);
+                        }
 
-                // Zero out the net rebalance (due to rounding) by assigning error to cash position
-                double ResidualError = accountDictionary.Values.Sum(dp => dp.valRebalance);
-                string AbsorberSymbol = accountDictionary.Keys.FirstOrDefault(k => k.Contains("FMPXX") || k.Contains("FDRXX"));
+                        FinalRebalanceValues.Add(key, finalValRebalance);
+                    }
 
-                if (!string.IsNullOrEmpty(AbsorberSymbol) && Math.Abs(ResidualError) > 0.001)
-                {
-                    AcountRecord absorberRecord = accountDictionary[AbsorberSymbol];
+                    // --------------------------------------------------------------------
+                    // Phase 3: Apply Updates, Zero-Out, and Run Simulation
+                    // --------------------------------------------------------------------
+                    double newTotalValue = TotalCurValue; // Total remains constant as net rebalance will be zero.
 
-                    absorberRecord.valRebalance = Math.Round(absorberRecord.valRebalance - ResidualError, 3);
+                    // Apply FinalRebalanceValues to the main dictionary
+                    foreach (var kvp in accountDictionary.Keys.ToList())
+                    {
+                        AcountRecord record = accountDictionary[kvp];
 
-                    // Rerun simulation for the modified absorber record
-                    absorberRecord.simulatedValue = absorberRecord.value + absorberRecord.valRebalance;
-                    absorberRecord.simulatedPercent = (absorberRecord.simulatedValue / newTotalValue) * 100.0;
+                        if (FinalRebalanceValues.ContainsKey(kvp))
+                        {
+                            record.valRebalance = FinalRebalanceValues[kvp];
+                        }
 
-                    accountDictionary[AbsorberSymbol] = absorberRecord;
-                }
+                        // Recalculate curPercent (optional, but ensures final struct state is accurate)
+                        record.curPercent = record.value / TotalCurValue * 100;
 
-                // --------------------------------------------------------------------
-                // END: CASH-AWARE REBALANCING LOGIC
-                // --------------------------------------------------------------------
+                        // SIMULATION: Calculate new value and percentage
+                        record.simulatedValue = record.value + record.valRebalance;
+                        record.simulatedPercent = (record.simulatedValue / newTotalValue) * 100.0;
 
-                TotalCurPercent = Math.Round(accountDictionary.Values.Sum(dp => dp.curPercent), 1);
-                this.lblTotalCur.Text = TotalCurPercent.ToString();
+                        accountDictionary[kvp] = record;
+                    }
 
-                // This value should now be 0.000 
-                lblTotalRebalance.Text = Math.Round(accountDictionary.Values.Sum(dp => dp.valRebalance), 3).ToString();
+                    // Zero out the net rebalance (due to rounding) by assigning error to cash position
+                    double ResidualError = accountDictionary.Values.Sum(dp => dp.valRebalance);
+                    string AbsorberSymbol = accountDictionary.Keys.FirstOrDefault(k => k.Contains("FMPXX") || k.Contains("FDRXX"));
 
-                // Populate grid
-                foreach (var kvp in accountDictionary)
-                {
-                    if (kvp.Key.ToString().Contains("FMPXX") || kvp.Key.ToString().Contains("FDRXX"))
-                        dataGrid.Rows.Add(
-                        "💰 "+ kvp.Value.desc,
-                        kvp.Key,
-                        kvp.Value.value,
-                        Math.Round(kvp.Value.curPercent, 3),
-                        kvp.Value.targetPercent,
-                        kvp.Value.valRebalance,
-                        Math.Round(kvp.Value.simulatedPercent, 3) // Replaced deviation with Simulated Value %
-                    );
-                    else
-                        dataGrid.Rows.Add(
-                       kvp.Value.desc,
-                       kvp.Key,
-                       kvp.Value.value,
-                       Math.Round(kvp.Value.curPercent, 3),
-                       kvp.Value.targetPercent,
-                       kvp.Value.valRebalance,
-                       Math.Round(kvp.Value.simulatedPercent, 3) // Replaced deviation with Simulated Value %
-                       );
+                    if (!string.IsNullOrEmpty(AbsorberSymbol) && Math.Abs(ResidualError) > 0.001)
+                    {
+                        AcountRecord absorberRecord = accountDictionary[AbsorberSymbol];
+
+                        absorberRecord.valRebalance = Math.Round(absorberRecord.valRebalance - ResidualError, 3);
+
+                        // Rerun simulation for the modified absorber record
+                        absorberRecord.simulatedValue = absorberRecord.value + absorberRecord.valRebalance;
+                        absorberRecord.simulatedPercent = (absorberRecord.simulatedValue / newTotalValue) * 100.0;
+
+                        accountDictionary[AbsorberSymbol] = absorberRecord;
+                    }
+
+                    // --------------------------------------------------------------------
+                    // END: CASH-AWARE REBALANCING LOGIC
+                    // --------------------------------------------------------------------
+
+                    TotalCurPercent = Math.Round(accountDictionary.Values.Sum(dp => dp.curPercent), 1);
+                    this.lblTotalCur.Text = TotalCurPercent.ToString();
+
+                    // This value should now be 0.000 
+                    lblTotalRebalance.Text = Math.Round(accountDictionary.Values.Sum(dp => dp.valRebalance), 3).ToString();
+
+                    // Populate grid
+                    foreach (var kvp in accountDictionary)
+                    {
+                        if (kvp.Key.ToString().Contains("FMPXX") || kvp.Key.ToString().Contains("FDRXX"))
+                            dataGrid.Rows.Add(
+                            "💰 " + kvp.Value.desc,
+                            kvp.Key,
+                            kvp.Value.value,
+                            Math.Round(kvp.Value.curPercent, 3),
+                            kvp.Value.targetPercent,
+                            kvp.Value.valRebalance,
+                            Math.Round(kvp.Value.simulatedPercent, 3) // Replaced deviation with Simulated Value %
+                        );
+                        else
+                            dataGrid.Rows.Add(
+                           kvp.Value.desc,
+                           kvp.Key,
+                           kvp.Value.value,
+                           Math.Round(kvp.Value.curPercent, 3),
+                           kvp.Value.targetPercent,
+                           kvp.Value.valRebalance,
+                           Math.Round(kvp.Value.simulatedPercent, 3) // Replaced deviation with Simulated Value %
+                           );
 
 
+                    }
+                    // --------------------------------------------------------------------
+                    // Report Investment strategy (stocks/Bonds/Cash) : curent vs target
+                    // --------------------------------------------------------------------
+                    string[] strs = this.inif.GetSectionNames();
+                    List<SetingStructure> dataList = new List<SetingStructure>();
+                    double curStocks = 0, targetStocks = 0, curBonds = 0, targetBonds = 0, curCash = 0, targetCash = 0;
+                    foreach (string s in strs)
+                    {
+                        SetingStructure data = new SetingStructure
+                        {
+                            Symbol = this.inif.GetString(s, "symbol", ""),
+                            TargetPercent = this.inif.GetDouble(s, "%", 0),
+                            Note = this.inif.GetString(s, "note", "")
+                        };
+                        dataList.Add(data);
+                        if (data.Note.ToLower().Contains("stock"))
+                        {
+                            // Stocks
+                            if (accountDictionary.ContainsKey(data.Symbol))
+                                curStocks += accountDictionary[data.Symbol].curPercent;
+                            targetStocks += data.TargetPercent;
+                        }
+                        else if (data.Note.ToLower().Contains("bond"))
+                        {
+                            // Bonds
+                            if (accountDictionary.ContainsKey(data.Symbol))
+                                curBonds += accountDictionary[data.Symbol].curPercent;
+                            targetBonds += data.TargetPercent;
+                        }
+                        else if (data.Note.ToLower().Contains("cash"))
+                        {
+                            // Cash
+                            if (accountDictionary.ContainsKey(data.Symbol))
+                                curCash += accountDictionary[data.Symbol].curPercent;
+                            targetCash += data.TargetPercent;
+                        }
 
-                    // Add visual indicator for cash positions
-                    //if (kvp.Value.ToString().Contains("FMPXX"))
-                    //{
-                    //    row.Cells[0].Value = "💰 " + kvp.Value.desc; // Add cash emoji
-                    //}
-
-                    //dataGrid.Rows.Add(row);
-
+                    }
+                    txtStocksT.Text = targetStocks.ToString("F2") + " %";
+                    txtStocksC.Text = curStocks.ToString("F2") + " %";
+                    txtBondsT.Text = targetBonds.ToString("F2") + " %";
+                    txtBondsC.Text = curBonds.ToString("F2") + " %";
+                    txtCashT.Text = targetCash.ToString("F2") + " %";
+                    txtCashC.Text = curCash.ToString("F2") + " %";
 
                 }
             }
