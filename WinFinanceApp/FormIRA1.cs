@@ -439,8 +439,9 @@ namespace WinFinanceApp
                 // Populate grid
                 foreach (var kvp in accountDictionary)
                 {
-                    dataGrid.Rows.Add(
-                        kvp.Value.desc,
+                    if (kvp.Key.ToString().Contains("FMPXX") || kvp.Key.ToString().Contains("FDRXX"))
+                        dataGrid.Rows.Add(
+                        "💰 "+ kvp.Value.desc,
                         kvp.Key,
                         kvp.Value.value,
                         Math.Round(kvp.Value.curPercent, 3),
@@ -448,6 +449,28 @@ namespace WinFinanceApp
                         kvp.Value.valRebalance,
                         Math.Round(kvp.Value.simulatedPercent, 3) // Replaced deviation with Simulated Value %
                     );
+                    else
+                        dataGrid.Rows.Add(
+                       kvp.Value.desc,
+                       kvp.Key,
+                       kvp.Value.value,
+                       Math.Round(kvp.Value.curPercent, 3),
+                       kvp.Value.targetPercent,
+                       kvp.Value.valRebalance,
+                       Math.Round(kvp.Value.simulatedPercent, 3) // Replaced deviation with Simulated Value %
+                       );
+
+
+
+                    // Add visual indicator for cash positions
+                    //if (kvp.Value.ToString().Contains("FMPXX"))
+                    //{
+                    //    row.Cells[0].Value = "💰 " + kvp.Value.desc; // Add cash emoji
+                    //}
+
+                    //dataGrid.Rows.Add(row);
+
+
                 }
             }
             catch (Exception ex)
