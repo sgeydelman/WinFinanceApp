@@ -212,6 +212,42 @@ namespace WinFinanceApp
             catch { }
         }
 
+        private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            using (AboutBox1 box = new AboutBox1())
+            {
+                box.ShowDialog(this);
+            }
+        }
+
+        private void pictureBox1_Click(object sender, EventArgs e)
+        {
+            using (AboutBox1 box = new AboutBox1())
+            {
+                box.ShowDialog(this);
+            }
+        }
+
+        private void oPMMonitorToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            this.ShowForm(formMonitor);
+        }
+
+        private void sETUPToolStripMenuItem_Click(object sender, EventArgs e) //Rebalance
+        {
+            this.ShowForm(formIRA1);
+        }
+
+        private void historicalRetrunToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            this.ShowForm(formReturn);
+        }
+
+        private void sETUPToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            this.ShowForm(formSetup);
+        }
+
         private void BtnReturn_Click(object sender, EventArgs e)
         {
             this.ShowForm(formReturn);

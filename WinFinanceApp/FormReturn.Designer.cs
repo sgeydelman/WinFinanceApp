@@ -29,6 +29,7 @@ namespace WinFinanceApp
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormReturn));
             this.groupBox = new System.Windows.Forms.GroupBox();
             this.grpMonths = new System.Windows.Forms.GroupBox();
             this.label2 = new System.Windows.Forms.Label();
@@ -44,10 +45,12 @@ namespace WinFinanceApp
             this.BtnLoad = new System.Windows.Forms.Button();
             this.openFileD = new System.Windows.Forms.OpenFileDialog();
             this.timerGUI = new System.Windows.Forms.Timer(this.components);
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.groupBox.SuspendLayout();
             this.grpMonths.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numMonths)).BeginInit();
             this.grpSelect.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
             // groupBox
@@ -55,7 +58,8 @@ namespace WinFinanceApp
             this.groupBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.groupBox.Controls.Add(this.grpMonths);
+            this.groupBox.Controls.Add(this.BtnCalculate);
+            this.groupBox.Controls.Add(this.pictureBox1);
             this.groupBox.Controls.Add(this.chkAnnualized);
             this.groupBox.Controls.Add(this.fPlot);
             this.groupBox.Controls.Add(this.grpSelect);
@@ -74,9 +78,9 @@ namespace WinFinanceApp
             this.grpMonths.Controls.Add(this.label3);
             this.grpMonths.Controls.Add(this.numMonths);
             this.grpMonths.Controls.Add(this.lblTotalM);
-            this.grpMonths.Location = new System.Drawing.Point(6, 229);
+            this.grpMonths.Location = new System.Drawing.Point(1, 106);
             this.grpMonths.Name = "grpMonths";
-            this.grpMonths.Size = new System.Drawing.Size(106, 133);
+            this.grpMonths.Size = new System.Drawing.Size(106, 150);
             this.grpMonths.TabIndex = 5;
             this.grpMonths.TabStop = false;
             // 
@@ -148,14 +152,12 @@ namespace WinFinanceApp
             // 
             // grpSelect
             // 
-            this.grpSelect.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left)));
-            this.grpSelect.Controls.Add(this.BtnCalculate);
+            this.grpSelect.Controls.Add(this.grpMonths);
             this.grpSelect.Controls.Add(this.label1);
             this.grpSelect.Controls.Add(this.comboMonths);
             this.grpSelect.Location = new System.Drawing.Point(6, 123);
             this.grpSelect.Name = "grpSelect";
-            this.grpSelect.Size = new System.Drawing.Size(112, 318);
+            this.grpSelect.Size = new System.Drawing.Size(112, 286);
             this.grpSelect.TabIndex = 2;
             this.grpSelect.TabStop = false;
             this.grpSelect.Text = "Select months  and click Get TWR";
@@ -163,7 +165,7 @@ namespace WinFinanceApp
             // BtnCalculate
             // 
             this.BtnCalculate.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.BtnCalculate.Location = new System.Drawing.Point(19, 259);
+            this.BtnCalculate.Location = new System.Drawing.Point(24, 415);
             this.BtnCalculate.Name = "BtnCalculate";
             this.BtnCalculate.Size = new System.Drawing.Size(75, 44);
             this.BtnCalculate.TabIndex = 4;
@@ -208,6 +210,17 @@ namespace WinFinanceApp
             this.timerGUI.Enabled = true;
             this.timerGUI.Tick += new System.EventHandler(this.timerGUI_Tick);
             // 
+            // pictureBox1
+            // 
+            this.pictureBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.pictureBox1.Image = global::WinFinanceApp.Properties.Resources.trend;
+            this.pictureBox1.Location = new System.Drawing.Point(55, 580);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(57, 50);
+            this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.pictureBox1.TabIndex = 6;
+            this.pictureBox1.TabStop = false;
+            // 
             // FormReturn
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -215,6 +228,7 @@ namespace WinFinanceApp
             this.ClientSize = new System.Drawing.Size(1479, 677);
             this.Controls.Add(this.groupBox);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "FormReturn";
             this.Text = "FormReturn";
             this.Load += new System.EventHandler(this.FormReturn_Load);
@@ -226,6 +240,7 @@ namespace WinFinanceApp
             ((System.ComponentModel.ISupportInitialize)(this.numMonths)).EndInit();
             this.grpSelect.ResumeLayout(false);
             this.grpSelect.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -247,5 +262,6 @@ namespace WinFinanceApp
         private System.Windows.Forms.Timer timerGUI;
         private System.Windows.Forms.CheckBox chkAnnualized;
         private System.Windows.Forms.GroupBox grpMonths;
+        private System.Windows.Forms.PictureBox pictureBox1;
     }
 }
