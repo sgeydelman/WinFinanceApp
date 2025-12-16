@@ -1,10 +1,9 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -20,47 +19,7 @@ namespace WinFinanceApp
             this.labelVersion.Text = String.Format("Version {0}", AssemblyVersion);
             this.labelCopyright.Text = AssemblyCopyright;
             this.labelCompanyName.Text = AssemblyCompany;
-            
-            // Build the description with application purpose
-            string appDescription = BuildApplicationDescription();
-            this.textBoxDescription.Text = appDescription;
-        }
-
-        /// <summary>
-        /// Builds the complete application description including purpose and usage information
-        /// </summary>
-        private string BuildApplicationDescription()
-        {
-            StringBuilder description = new StringBuilder();
-            
-            // Add assembly description if available
-            string assemblyDesc = AssemblyDescription;
-            if (!string.IsNullOrEmpty(assemblyDesc))
-            {
-                description.AppendLine(assemblyDesc);
-                description.AppendLine();
-            }
-            
-            // Add application purpose and usage information
-            description.AppendLine("Application Purpose:");
-            description.AppendLine();
-            description.AppendLine("This application processes and analyzes investment data by parsing files from Fidelity investment brokerage accounts.");
-            description.AppendLine();
-            description.AppendLine("Key Features:");
-            description.AppendLine("• Portfolio monitoring and analysis");
-            description.AppendLine("• Account rebalancing calculations");
-            description.AppendLine("• Historical return analysis (Time-Weighted Return)");
-            description.AppendLine("• Annualized performance tracking");
-            description.AppendLine();
-            description.AppendLine("Data Import Requirements:");
-            description.AppendLine("Files must be downloaded from the Fidelity website and converted to CSV format before loading into the application.");
-            description.AppendLine();
-            description.AppendLine("Supported File Types:");
-            description.AppendLine("• Portfolio Positions CSV (for account monitoring and rebalancing)");
-            description.AppendLine("• Periodic Returns CSV (for monthly time-weighted returns)");
-            description.AppendLine("• Annualized Returns CSV (for period-based performance analysis)");
-            
-            return description.ToString();
+            this.textBoxDescription.Text = AssemblyDescription;
         }
 
         #region Assembly Attribute Accessors

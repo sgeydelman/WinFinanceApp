@@ -31,26 +31,26 @@ namespace WinFinanceApp
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormReturn));
             this.groupBox = new System.Windows.Forms.GroupBox();
+            this.BtnCalculate = new System.Windows.Forms.Button();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.chkAnnualized = new System.Windows.Forms.CheckBox();
+            this.fPlot = new ScottPlot.WinForms.FormsPlot();
+            this.grpSelect = new System.Windows.Forms.GroupBox();
             this.grpMonths = new System.Windows.Forms.GroupBox();
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.numMonths = new System.Windows.Forms.NumericUpDown();
             this.lblTotalM = new System.Windows.Forms.Label();
-            this.chkAnnualized = new System.Windows.Forms.CheckBox();
-            this.fPlot = new ScottPlot.WinForms.FormsPlot();
-            this.grpSelect = new System.Windows.Forms.GroupBox();
-            this.BtnCalculate = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.comboMonths = new System.Windows.Forms.ComboBox();
             this.BtnLoad = new System.Windows.Forms.Button();
             this.openFileD = new System.Windows.Forms.OpenFileDialog();
             this.timerGUI = new System.Windows.Forms.Timer(this.components);
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.groupBox.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+            this.grpSelect.SuspendLayout();
             this.grpMonths.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numMonths)).BeginInit();
-            this.grpSelect.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
             // groupBox
@@ -58,7 +58,6 @@ namespace WinFinanceApp
             this.groupBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.groupBox.Controls.Add(this.BtnCalculate);
             this.groupBox.Controls.Add(this.pictureBox1);
             this.groupBox.Controls.Add(this.chkAnnualized);
             this.groupBox.Controls.Add(this.fPlot);
@@ -71,6 +70,62 @@ namespace WinFinanceApp
             this.groupBox.TabIndex = 0;
             this.groupBox.TabStop = false;
             this.groupBox.Text = "Historic time weighted return (TWR)";
+            // 
+            // BtnCalculate
+            // 
+            this.BtnCalculate.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.BtnCalculate.Location = new System.Drawing.Point(18, 281);
+            this.BtnCalculate.Name = "BtnCalculate";
+            this.BtnCalculate.Size = new System.Drawing.Size(75, 44);
+            this.BtnCalculate.TabIndex = 4;
+            this.BtnCalculate.Text = "Get TWR";
+            this.BtnCalculate.UseVisualStyleBackColor = true;
+            this.BtnCalculate.Click += new System.EventHandler(this.BtnCalculate_Click);
+            // 
+            // pictureBox1
+            // 
+            this.pictureBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.pictureBox1.Image = global::WinFinanceApp.Properties.Resources.trend;
+            this.pictureBox1.Location = new System.Drawing.Point(55, 580);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(57, 50);
+            this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.pictureBox1.TabIndex = 6;
+            this.pictureBox1.TabStop = false;
+            // 
+            // chkAnnualized
+            // 
+            this.chkAnnualized.AutoSize = true;
+            this.chkAnnualized.Location = new System.Drawing.Point(20, 87);
+            this.chkAnnualized.Name = "chkAnnualized";
+            this.chkAnnualized.Size = new System.Drawing.Size(88, 30);
+            this.chkAnnualized.TabIndex = 4;
+            this.chkAnnualized.Text = "Annualized\r\n return";
+            this.chkAnnualized.UseVisualStyleBackColor = true;
+            // 
+            // fPlot
+            // 
+            this.fPlot.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.fPlot.DisplayScale = 0F;
+            this.fPlot.Location = new System.Drawing.Point(124, 19);
+            this.fPlot.Name = "fPlot";
+            this.fPlot.Size = new System.Drawing.Size(1325, 611);
+            this.fPlot.TabIndex = 3;
+            // 
+            // grpSelect
+            // 
+            this.grpSelect.Controls.Add(this.BtnCalculate);
+            this.grpSelect.Controls.Add(this.grpMonths);
+            this.grpSelect.Controls.Add(this.label1);
+            this.grpSelect.Controls.Add(this.comboMonths);
+            this.grpSelect.Location = new System.Drawing.Point(6, 123);
+            this.grpSelect.Name = "grpSelect";
+            this.grpSelect.Size = new System.Drawing.Size(112, 341);
+            this.grpSelect.TabIndex = 2;
+            this.grpSelect.TabStop = false;
+            this.grpSelect.Text = "Select months  and click Get TWR";
             // 
             // grpMonths
             // 
@@ -129,50 +184,6 @@ namespace WinFinanceApp
             this.lblTotalM.TabIndex = 2;
             this.lblTotalM.Text = "?";
             // 
-            // chkAnnualized
-            // 
-            this.chkAnnualized.AutoSize = true;
-            this.chkAnnualized.Location = new System.Drawing.Point(20, 87);
-            this.chkAnnualized.Name = "chkAnnualized";
-            this.chkAnnualized.Size = new System.Drawing.Size(88, 30);
-            this.chkAnnualized.TabIndex = 4;
-            this.chkAnnualized.Text = "Annualized\r\n return";
-            this.chkAnnualized.UseVisualStyleBackColor = true;
-            // 
-            // fPlot
-            // 
-            this.fPlot.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.fPlot.DisplayScale = 0F;
-            this.fPlot.Location = new System.Drawing.Point(124, 19);
-            this.fPlot.Name = "fPlot";
-            this.fPlot.Size = new System.Drawing.Size(1325, 611);
-            this.fPlot.TabIndex = 3;
-            // 
-            // grpSelect
-            // 
-            this.grpSelect.Controls.Add(this.grpMonths);
-            this.grpSelect.Controls.Add(this.label1);
-            this.grpSelect.Controls.Add(this.comboMonths);
-            this.grpSelect.Location = new System.Drawing.Point(6, 123);
-            this.grpSelect.Name = "grpSelect";
-            this.grpSelect.Size = new System.Drawing.Size(112, 286);
-            this.grpSelect.TabIndex = 2;
-            this.grpSelect.TabStop = false;
-            this.grpSelect.Text = "Select months  and click Get TWR";
-            // 
-            // BtnCalculate
-            // 
-            this.BtnCalculate.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.BtnCalculate.Location = new System.Drawing.Point(24, 415);
-            this.BtnCalculate.Name = "BtnCalculate";
-            this.BtnCalculate.Size = new System.Drawing.Size(75, 44);
-            this.BtnCalculate.TabIndex = 4;
-            this.BtnCalculate.Text = "Get TWR";
-            this.BtnCalculate.UseVisualStyleBackColor = true;
-            this.BtnCalculate.Click += new System.EventHandler(this.BtnCalculate_Click);
-            // 
             // label1
             // 
             this.label1.AutoSize = true;
@@ -210,17 +221,6 @@ namespace WinFinanceApp
             this.timerGUI.Enabled = true;
             this.timerGUI.Tick += new System.EventHandler(this.timerGUI_Tick);
             // 
-            // pictureBox1
-            // 
-            this.pictureBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.pictureBox1.Image = global::WinFinanceApp.Properties.Resources.trend;
-            this.pictureBox1.Location = new System.Drawing.Point(55, 580);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(57, 50);
-            this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.pictureBox1.TabIndex = 6;
-            this.pictureBox1.TabStop = false;
-            // 
             // FormReturn
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -235,12 +235,12 @@ namespace WinFinanceApp
             this.Resize += new System.EventHandler(this.FormReturn_Resize);
             this.groupBox.ResumeLayout(false);
             this.groupBox.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
+            this.grpSelect.ResumeLayout(false);
+            this.grpSelect.PerformLayout();
             this.grpMonths.ResumeLayout(false);
             this.grpMonths.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numMonths)).EndInit();
-            this.grpSelect.ResumeLayout(false);
-            this.grpSelect.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
 
         }

@@ -72,54 +72,6 @@ namespace WinFinanceApp
             }
         }
 
-        // IMPROVED: Detect if CSV is in annualized return format
-        private bool IsAnnualizedReturnFormat(string[] lines)
-        {
-            foreach (string line in lines)
-            {
-                if (line.Contains("Time-weighted rate of return"))
-                {
-                    // Check if header contains period columns like "1 Month", "3 Month", "YTD", etc.
-                    string headerLine = line;
-                    return headerLine.Contains("1 Month") ||
-                           headerLine.Contains("3 Month") ||
-                           headerLine.Contains("YTD") ||
-                           headerLine.Contains("1 Year") ||
-                           headerLine.Contains("Life of available data");
-                }
-            }
-            return false;
-        }
-
-        // IMPROVED: Detect if CSV is in monthly return format
-        private bool IsMonthlyReturnFormat(string[] lines)
-        {
-            foreach (string line in lines)
-            {
-                if (line.Contains("Time-weighted rate of return"))
-                {
-                    // Check if header contains date-style columns (MMM-yy format or Excel serial numbers)
-                    string[] headers = line.Split(',');
-                    for (int i = 1; i < Math.Min(headers.Length, 5); i++) // Check first few columns
-                    {
-                        string header = headers[i].Trim();
-                        if (string.IsNullOrEmpty(header))
-                            continue;
-
-                        // Check for Excel serial number (all digits)
-                        if (int.TryParse(header, out _))
-                            return true;
-
-                        // Check for date format like "Oct-25", "Nov-25"
-                        if (DateTime.TryParseExact(header, "MMM-yy", CultureInfo.InvariantCulture, DateTimeStyles.None, out _))
-                            return true;
-                    }
-                }
-            }
-            return false;
-        }
-
-
         private void BtnLoad_Click(object sender, EventArgs e)
         {
             if (this.chkAnnualized.Checked)
@@ -165,7 +117,7 @@ namespace WinFinanceApp
             catch (Exception ex)
             {
                 this._logger.SentEvent(ex.ToString(), Logger.EnumLogLevel.EXCEPTION_LEVEL);
-
+              //  MessageBox.Show($"Error loading file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -233,7 +185,7 @@ namespace WinFinanceApp
                 if (comboMonths.SelectedItem == null)
                 {
                     this._logger.SentEvent("Please select a start month or period", Logger.EnumLogLevel.WARNING_LEVEL);
-
+                //    MessageBox.Show("Please select a start month or period", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
 
@@ -245,14 +197,14 @@ namespace WinFinanceApp
                     if (string.IsNullOrEmpty(selectedPeriod))
                     {
                         this._logger.SentEvent("Invalid period selection", Logger.EnumLogLevel.WARNING_LEVEL);
-
+                       // MessageBox.Show("Invalid period selection", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                         return;
                     }
 
                     if (annualizedData == null || annualizedData.Count == 0)
                     {
                         this._logger.SentEvent("No annualized data loaded", Logger.EnumLogLevel.WARNING_LEVEL);
-                        // MessageBox.Show("No annualized data loaded", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                       // MessageBox.Show("No annualized data loaded", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                         return;
                     }
 
@@ -276,7 +228,7 @@ namespace WinFinanceApp
                     if (string.IsNullOrEmpty(selectedMonth))
                     {
                         this._logger.SentEvent("Invalid month selection", Logger.EnumLogLevel.ERROR_LEVEL);
-                        // MessageBox.Show("Invalid month selection", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                       // MessageBox.Show("Invalid month selection", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                         return;
                     }
 
@@ -305,7 +257,7 @@ namespace WinFinanceApp
             catch (Exception ex)
             {
                 this._logger.SentEvent($"Error calculating returns: {ex.Message}", Logger.EnumLogLevel.EXCEPTION_LEVEL);
-                //  MessageBox.Show($"Error calculating returns: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+              //  MessageBox.Show($"Error calculating returns: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -452,7 +404,7 @@ namespace WinFinanceApp
             catch (Exception ex)
             {
                 this._logger.SentEvent($"Error displaying chart: {ex.Message}", Logger.EnumLogLevel.EXCEPTION_LEVEL);
-                //   MessageBox.Show($"Error displaying chart: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+             //   MessageBox.Show($"Error displaying chart: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -624,7 +576,7 @@ namespace WinFinanceApp
             catch (Exception ex)
             {
                 this._logger.SentEvent($"Error displaying chart: {ex.Message}", Logger.EnumLogLevel.EXCEPTION_LEVEL);
-                // MessageBox.Show($"Error displaying chart: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+               // MessageBox.Show($"Error displaying chart: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -734,28 +686,10 @@ namespace WinFinanceApp
                 {
                     string[] lines = System.IO.File.ReadAllLines(this.openFileD.FileName);
 
-                    // IMPROVED: Validate CSV format before parsing
-                    if (IsMonthlyReturnFormat(lines))
-                    {
-                        string errorMsg = "Error: This file contains MONTHLY return data. " +
-                                        "Please uncheck the 'Annualized return' checkbox and reload the file.";
-                        this._logger.SentEvent(errorMsg, Logger.EnumLogLevel.ERROR_LEVEL);
-                        return;
-                    }
-
-                    if (!IsAnnualizedReturnFormat(lines))
-                    {
-                        string errorMsg = "Error: This file does not contain valid ANNUALIZED return data. " +
-                                        "Expected format: CSV with period columns (e.g., 1 Month, 3 Month, YTD, 1 Year). " +
-                                        "If this is a monthly return file, uncheck the 'Annualized return' checkbox.";
-                        this._logger.SentEvent(errorMsg, Logger.EnumLogLevel.ERROR_LEVEL);
-                        return;
-                    }
-
                     if (lines.Length < 2)
                     {
                         this._logger.SentEvent("Invalid CSV file format", Logger.EnumLogLevel.ERROR_LEVEL);
-                        //    MessageBox.Show("Invalid CSV file format", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    //    MessageBox.Show("Invalid CSV file format", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         return;
                     }
 
@@ -786,7 +720,7 @@ namespace WinFinanceApp
                     if (headerLineIndex == -1)
                     {
                         this._logger.SentEvent("Could not find 'Time-weighted rate of return' table in CSV file", Logger.EnumLogLevel.ERROR_LEVEL);
-                        //    MessageBox.Show("Could not find 'Time-weighted rate of return' table in CSV file", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    //    MessageBox.Show("Could not find 'Time-weighted rate of return' table in CSV file", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         return;
                     }
 
@@ -914,7 +848,7 @@ namespace WinFinanceApp
             catch (Exception ex)
             {
                 this._logger.SentEvent($"Error loading annualized data: {ex.Message}", Logger.EnumLogLevel.EXCEPTION_LEVEL);
-                //  MessageBox.Show($"Error loading annualized data: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+              //  MessageBox.Show($"Error loading annualized data: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
     }
