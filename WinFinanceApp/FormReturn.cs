@@ -11,6 +11,7 @@ using System.Windows.Forms;
 using System.Globalization;
 using System.IO;
 using ScottPlot;
+using System.CodeDom;
 
 namespace WinFinanceApp
 {
@@ -122,10 +123,24 @@ namespace WinFinanceApp
 
         private void BtnLoad_Click(object sender, EventArgs e)
         {
+            fPlot.Plot.Clear();
+            fPlot.Refresh();
+            this.openFileD.Reset();
+            comboMonths.SelectedItem = null;
             if (this.chkAnnualized.Checked)
                 LoadDataFromCSV_Annualized(sender, e);
             else
                 LoadDataFromCSV(sender, e);
+           
+
+           
+            if (!this.BtnCalculate.Visible)
+            {
+                
+                this.BtnCalculate.Visible = true;
+            }
+            this.BtnCalculate.PerformClick();
+           
 
         }
 
@@ -155,6 +170,7 @@ namespace WinFinanceApp
                     this.numMonths.Enabled = true; // Enable for normal mode
                     this.comboMonths.DataSource = availableMonths;
 
+                   
                     // Clear the plot
                     fPlot.Plot.Clear();
                     fPlot.Refresh();
@@ -233,8 +249,10 @@ namespace WinFinanceApp
                 if (comboMonths.SelectedItem == null)
                 {
                     this._logger.SentEvent("Please select a start month or period", Logger.EnumLogLevel.WARNING_LEVEL);
-
-                    return;
+                    fPlot.Plot.Clear();
+                    fPlot.Refresh();
+                    throw new Exception("No proper file is found");
+                  //  return;
                 }
 
                 // Check if we're in annualized mode
@@ -252,7 +270,7 @@ namespace WinFinanceApp
                     if (annualizedData == null || annualizedData.Count == 0)
                     {
                         this._logger.SentEvent("No annualized data loaded", Logger.EnumLogLevel.WARNING_LEVEL);
-                        // MessageBox.Show("No annualized data loaded", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        
                         return;
                     }
 
@@ -276,7 +294,7 @@ namespace WinFinanceApp
                     if (string.IsNullOrEmpty(selectedMonth))
                     {
                         this._logger.SentEvent("Invalid month selection", Logger.EnumLogLevel.ERROR_LEVEL);
-                        // MessageBox.Show("Invalid month selection", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        
                         return;
                     }
 
@@ -305,10 +323,11 @@ namespace WinFinanceApp
             catch (Exception ex)
             {
                 this._logger.SentEvent($"Error calculating returns: {ex.Message}", Logger.EnumLogLevel.EXCEPTION_LEVEL);
-                //  MessageBox.Show($"Error calculating returns: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+               
             }
         }
-
+        //private void BtnCalculate_Click(object sender, EventArgs e)
+        
         private void DisplayTWRChart(Dictionary<string, double?> twrPercentages, string startMonth, int months)
         {
             try
@@ -452,7 +471,7 @@ namespace WinFinanceApp
             catch (Exception ex)
             {
                 this._logger.SentEvent($"Error displaying chart: {ex.Message}", Logger.EnumLogLevel.EXCEPTION_LEVEL);
-                //   MessageBox.Show($"Error displaying chart: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                
             }
         }
 
@@ -740,7 +759,10 @@ namespace WinFinanceApp
                         string errorMsg = "Error: This file contains MONTHLY return data. " +
                                         "Please uncheck the 'Annualized return' checkbox and reload the file.";
                         this._logger.SentEvent(errorMsg, Logger.EnumLogLevel.ERROR_LEVEL);
-                        return;
+                        fPlot.Plot.Clear();
+                        fPlot.Refresh();
+                        throw new Exception("Wrong Data from the file!");
+                        //return;
                     }
 
                     if (!IsAnnualizedReturnFormat(lines))
@@ -900,15 +922,18 @@ namespace WinFinanceApp
                     this.numMonths.Maximum = 1; // Not used in annualized mode
                     this.numMonths.Value = 1;
                     this.numMonths.Enabled = false; // Disable since we select by period, not count
-
+                    //if (this.comboMonths.Items.Count > 0)
+                    //{
+                    //    this.comboMonths.SelectedIndex = 0;
+                    //}
                     // Clear the plot
                     fPlot.Plot.Clear();
                     fPlot.Refresh();
 
                     groupBox.Text = $"Annualized Return - {Path.GetFileName(this.openFileD.FileName)}";
 
-                    this._logger.SentEvent($"Loaded annualized data for {annualizedData.Count} accounts with {annualizedPeriods.Count} periods",
-                        Logger.EnumLogLevel.INFO_LEVEL);
+                 //   this._logger.SentEvent($"Loaded annualized data for {annualizedData.Count} accounts with {annualizedPeriods.Count} periods",
+                   //     Logger.EnumLogLevel.INFO_LEVEL);
                 }
             }
             catch (Exception ex)

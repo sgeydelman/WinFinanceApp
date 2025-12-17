@@ -31,11 +31,11 @@ namespace WinFinanceApp
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormReturn));
             this.groupBox = new System.Windows.Forms.GroupBox();
-            this.BtnCalculate = new System.Windows.Forms.Button();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.chkAnnualized = new System.Windows.Forms.CheckBox();
             this.fPlot = new ScottPlot.WinForms.FormsPlot();
             this.grpSelect = new System.Windows.Forms.GroupBox();
+            this.BtnCalculate = new System.Windows.Forms.Button();
             this.grpMonths = new System.Windows.Forms.GroupBox();
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
@@ -58,6 +58,7 @@ namespace WinFinanceApp
             this.groupBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox.Controls.Add(this.BtnCalculate);
             this.groupBox.Controls.Add(this.pictureBox1);
             this.groupBox.Controls.Add(this.chkAnnualized);
             this.groupBox.Controls.Add(this.fPlot);
@@ -70,17 +71,6 @@ namespace WinFinanceApp
             this.groupBox.TabIndex = 0;
             this.groupBox.TabStop = false;
             this.groupBox.Text = "Historic time weighted return (TWR)";
-            // 
-            // BtnCalculate
-            // 
-            this.BtnCalculate.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.BtnCalculate.Location = new System.Drawing.Point(18, 281);
-            this.BtnCalculate.Name = "BtnCalculate";
-            this.BtnCalculate.Size = new System.Drawing.Size(75, 44);
-            this.BtnCalculate.TabIndex = 4;
-            this.BtnCalculate.Text = "Get TWR";
-            this.BtnCalculate.UseVisualStyleBackColor = true;
-            this.BtnCalculate.Click += new System.EventHandler(this.BtnCalculate_Click);
             // 
             // pictureBox1
             // 
@@ -116,16 +106,26 @@ namespace WinFinanceApp
             // 
             // grpSelect
             // 
-            this.grpSelect.Controls.Add(this.BtnCalculate);
             this.grpSelect.Controls.Add(this.grpMonths);
             this.grpSelect.Controls.Add(this.label1);
             this.grpSelect.Controls.Add(this.comboMonths);
             this.grpSelect.Location = new System.Drawing.Point(6, 123);
             this.grpSelect.Name = "grpSelect";
-            this.grpSelect.Size = new System.Drawing.Size(112, 341);
+            this.grpSelect.Size = new System.Drawing.Size(112, 285);
             this.grpSelect.TabIndex = 2;
             this.grpSelect.TabStop = false;
             this.grpSelect.Text = "Select months  and click Get TWR";
+            // 
+            // BtnCalculate
+            // 
+            this.BtnCalculate.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.BtnCalculate.Location = new System.Drawing.Point(20, 426);
+            this.BtnCalculate.Name = "BtnCalculate";
+            this.BtnCalculate.Size = new System.Drawing.Size(75, 44);
+            this.BtnCalculate.TabIndex = 4;
+            this.BtnCalculate.Text = "Get TWR";
+            this.BtnCalculate.UseVisualStyleBackColor = true;
+            this.BtnCalculate.Click += new System.EventHandler(this.BtnCalculate_Click);
             // 
             // grpMonths
             // 
