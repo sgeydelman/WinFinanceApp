@@ -90,22 +90,7 @@ namespace WinFinanceApp
                 }
                 List<SetingStructure> dataList = GetDataFromDataGridView(); // new List<SetingStructure>();
                 lblTotal.Text = dataList.Sum(item => item.TargetPercent).ToString();
-                //  this.dataGrid.Rows.Add("t1", "t2","t3");
-                //this.txt0.Text = this.inif.GetString("0", "symbol", "FMPXX");
-                //this.num0.Value = (decimal)this.inif.GetDouble("0", "%", 5);
-
-                //this.txt1.Text = this.inif.GetString("1", "symbol", "LQD");
-                //this.num1.Value = (decimal)this.inif.GetDouble("1", "%", 17);
-                //this.txt2.Text = this.inif.GetString("2", "symbol", "SCHP");
-                //this.num2.Value = (decimal)this.inif.GetDouble("2", "%", 9);
-                //this.txt3.Text = this.inif.GetString("3", "symbol", "VEA");
-                //this.num3.Value = (decimal)this.inif.GetDouble("3", "%", 11);
-                //this.txt4.Text = this.inif.GetString("4", "symbol", "VWO");
-                //this.num4.Value = (decimal)this.inif.GetDouble("4", "%", 9);
-                //this.txt5.Text = this.inif.GetString("5", "symbol", "VNQ");
-                //this.num5.Value = (decimal)this.inif.GetDouble("5", "%", 12);
-                //this.txt6.Text = this.inif.GetString("6", "symbol", "VTI");
-                //this.num6.Value = (decimal)this.inif.GetDouble("6", "%", 37);
+                
             }
             catch (Exception ex)
             {
@@ -116,21 +101,7 @@ namespace WinFinanceApp
         {
             try
             {
-                //double sum = (double)this.num0.Value + (double)this.num1.Value + (double)this.num2.Value + (double)this.num3.Value + (double)this.num4.Value +
-                //    (double)this.num5.Value + (double)this.num6.Value;
-                //if (sum != 100)
-                //{
-                //    ReadAll();
-                //    throw new Exception("The total sum value should be 100%. Entry is not recorded!");
-                //}
-               // string[] strs = this.inif.GetSectionNames();
-                //foreach (string str in strs)
-                //{
-                //    this.inif.DeleteSection(str);
-                //}
-
-
-                //
+                
                 List<SetingStructure> dataList = GetDataFromDataGridView(); // new List<SetingStructure>();
                 TotalPercent =  dataList.Sum(item => item.TargetPercent);
                 if (TotalPercent != 100)
@@ -222,14 +193,14 @@ namespace WinFinanceApp
         public List<SetingStructure> GetDataFromDataGridView()
         {
             List<SetingStructure> dataList = new List<SetingStructure>();
-
+            double targetStocks = 0, targetBonds = 0, targetCash = 0;
             // Iterate through each row in the DataGridView
             foreach (DataGridViewRow row in dataGrid.Rows)
             {
                 // Skip the "new row" if it exists and is not filled
                 if (row.IsNewRow)
                     continue;
-
+               
                 SetingStructure myStruct = new SetingStructure();
 
                 // Access cell values by column index or column name
@@ -258,7 +229,31 @@ namespace WinFinanceApp
                     }
                 }
                 dataList.Add(myStruct);
+                if (myStruct.Note.ToLower().Contains("stock"))
+                {
+                    // Stocks
+                    
+                    targetStocks += myStruct.TargetPercent;
+                }
+                else if (myStruct.Note.ToLower().Contains("bond"))
+                {
+                    // Bonds
+                   
+                    targetBonds += myStruct.TargetPercent;
+                }
+                else if (myStruct.Note.ToLower().Contains("cash"))
+                {
+                    // Cash
+                   
+                    targetCash += myStruct.TargetPercent;
+                }
             }
+            txtStocksT.Text = targetStocks.ToString("F2") + " %";
+           
+            txtBondsT.Text = targetBonds.ToString("F2") + " %";
+           
+            txtCashT.Text = targetCash.ToString("F2") + " %";
+           
             return dataList;
         }
 

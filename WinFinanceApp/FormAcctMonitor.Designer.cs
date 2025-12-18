@@ -45,6 +45,7 @@
             this.radioButton4 = new System.Windows.Forms.RadioButton();
             this.radioButton5 = new System.Windows.Forms.RadioButton();
             this.grpFilter = new System.Windows.Forms.GroupBox();
+            this.radioInter = new System.Windows.Forms.RadioButton();
             this.dataGr = new System.Windows.Forms.DataGridView();
             this.Column9 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column10 = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -75,7 +76,6 @@
             this.Column8 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.BtnLoadFile = new System.Windows.Forms.Button();
             this.openFileD = new System.Windows.Forms.OpenFileDialog();
-            this.radioInter = new System.Windows.Forms.RadioButton();
             this.grpBox.SuspendLayout();
             this.grpReturn.SuspendLayout();
             this.groupBox2.SuspendLayout();
@@ -286,6 +286,18 @@
             this.grpFilter.TabStop = false;
             this.grpFilter.Text = "Filter by SMA (Sleeve)";
             this.grpFilter.Visible = false;
+            // 
+            // radioInter
+            // 
+            this.radioInter.AutoSize = true;
+            this.radioInter.Location = new System.Drawing.Point(17, 136);
+            this.radioInter.Name = "radioInter";
+            this.radioInter.Size = new System.Drawing.Size(135, 17);
+            this.radioInter.TabIndex = 18;
+            this.radioInter.TabStop = true;
+            this.radioInter.Text = "Equity International";
+            this.radioInter.UseVisualStyleBackColor = true;
+            this.radioInter.CheckedChanged += new System.EventHandler(this.radioInter_CheckedChanged);
             // 
             // dataGr
             // 
@@ -581,18 +593,6 @@
             // openFileD
             // 
             this.openFileD.FileName = "openFileD";
-            // 
-            // radioInter
-            // 
-            this.radioInter.AutoSize = true;
-            this.radioInter.Location = new System.Drawing.Point(17, 136);
-            this.radioInter.Name = "radioInter";
-            this.radioInter.Size = new System.Drawing.Size(135, 17);
-            this.radioInter.TabIndex = 18;
-            this.radioInter.TabStop = true;
-            this.radioInter.Text = "Equity International";
-            this.radioInter.UseVisualStyleBackColor = true;
-            this.radioInter.CheckedChanged += new System.EventHandler(this.radioInter_CheckedChanged);
             // 
             // FormAcctMonitor
             // 
