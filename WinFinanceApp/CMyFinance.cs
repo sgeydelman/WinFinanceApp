@@ -20,7 +20,8 @@ namespace WinFinanceApp
             LenaIRA,
             LenaRothIRA,
             SamIRA,
-            SamRothIRA
+            SamRothIRA,
+            Other
         }
         public CMyFinance()
         {

@@ -205,6 +205,9 @@ namespace WinFinanceApp
                     case (int)CMyFinance.AccountType.SamRothIRA:
                         s = "Sam's ROTH IRA account";
                         break;
+                    case (int)CMyFinance.AccountType.Other:
+                        s = "Other account";
+                        break;
                 }
                 this.lblRothIRA.Text = str + s;
 

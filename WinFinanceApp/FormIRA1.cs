@@ -680,6 +680,9 @@ namespace WinFinanceApp
                 case (int)CMyFinance.AccountType.SamRothIRA:
                     inif = new Ini(Properties.Settings.Default.SetupSamROTH);
                     break;
+                case (int)CMyFinance.AccountType.Other:
+                    inif = new Ini(Properties.Settings.Default.SetupOther);
+                    break;
             }
             LoadDataFromCSV(sender, e);
         }

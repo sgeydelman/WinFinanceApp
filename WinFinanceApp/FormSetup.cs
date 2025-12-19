@@ -118,20 +118,7 @@ namespace WinFinanceApp
                     i++;
                 }
 
-                //this.inif.WriteValue("0", "symbol", this.txt0.Text);
-                //this.inif.WriteValue("0", "%", (double)this.num0.Value);
-                //this.inif.WriteValue("1", "symbol", this.txt1.Text);
-                //this.inif.WriteValue("1", "%", (double)this.num1.Value);
-                //this.inif.WriteValue("2", "symbol", this.txt2.Text);
-                //this.inif.WriteValue("2", "%", (double)this.num2.Value);
-                //this.inif.WriteValue("3", "symbol", this.txt3.Text);
-                //this.inif.WriteValue("3", "%", (double)this.num3.Value);
-                //this.inif.WriteValue("4", "symbol", this.txt4.Text);
-                //this.inif.WriteValue("4", "%", (double)this.num4.Value);
-                //this.inif.WriteValue("5", "symbol", this.txt5.Text);
-                //this.inif.WriteValue("5", "%", (double)this.num5.Value);
-                //this.inif.WriteValue("6", "symbol", this.txt6.Text);
-                //this.inif.WriteValue("6", "%", (double)this.num6.Value);
+               
 
             }
             catch (Exception ex)
@@ -301,6 +288,9 @@ namespace WinFinanceApp
                         break;
                     case (int)CMyFinance.AccountType.SamRothIRA:
                         inif = new Ini(Properties.Settings.Default.SetupSamROTH);
+                        break;
+                    case (int)CMyFinance.AccountType.Other:
+                        inif = new Ini(Properties.Settings.Default.SetupOther);
                         break;
                 }
                 this.ReadAll();

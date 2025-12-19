@@ -32,5 +32,8 @@
     <Setting Name="SetupSamIRA" Type="System.String" Scope="User">
       <Value Profile="(Default)">c:\INI\setupFinanceSam.ini</Value>
     </Setting>
+    <Setting Name="SetupOther" Type="System.String" Scope="User">
+      <Value Profile="(Default)">c:\INI\setupFinanceOther.ini</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
