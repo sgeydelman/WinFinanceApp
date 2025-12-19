@@ -675,7 +675,7 @@ namespace WinFinanceApp
                     inif = new Ini(Properties.Settings.Default.SetupLenaROTH);
                     break;
                 case (int)CMyFinance.AccountType.SamIRA:
-                    inif = new Ini(Properties.Settings.Default.SetupPath);
+                    inif = new Ini(Properties.Settings.Default.SetupSamIRA);
                     break;
                 case (int)CMyFinance.AccountType.SamRothIRA:
                     inif = new Ini(Properties.Settings.Default.SetupSamROTH);

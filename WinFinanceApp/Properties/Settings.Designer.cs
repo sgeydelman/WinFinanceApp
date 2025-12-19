@@ -124,5 +124,17 @@ namespace WinFinanceApp.Properties {
                 this["SetupSamROTH"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("c:\\INI\\setupFinanceSam.ini")]
+        public string SetupSamIRA {
+            get {
+                return ((string)(this["SetupSamIRA"]));
+            }
+            set {
+                this["SetupSamIRA"] = value;
+            }
+        }
     }
 }
