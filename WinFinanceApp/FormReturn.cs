@@ -167,6 +167,7 @@ namespace WinFinanceApp
                     var availableMonths = parser.GetAvailableMonths();
                     this.lblTotalM.Text = availableMonths.Count.ToString();
                     this.numMonths.Maximum = availableMonths.Count;
+                    this.numMonths.Minimum = 1;
                     this.numMonths.Enabled = true; // Enable for normal mode
                     this.comboMonths.DataSource = availableMonths;
 
@@ -180,6 +181,7 @@ namespace WinFinanceApp
             }
             catch (Exception ex)
             {
+                this.comboMonths.DataSource = null;
                 this._logger.SentEvent(ex.ToString(), Logger.EnumLogLevel.EXCEPTION_LEVEL);
 
             }
@@ -235,7 +237,10 @@ namespace WinFinanceApp
                         }
                         catch (Exception ex)
                         {
-                            this._logger.SentEvent($"Error auto-updating chart: {ex.Message}", Logger.EnumLogLevel.WARNING_LEVEL);
+                            this.comboMonths.DataSource = null;
+                            fPlot.Plot.Clear();
+                            fPlot.Refresh();
+                            this._logger.SentEvent($"Error auto-updating chart: {ex.Message}", Logger.EnumLogLevel.ERROR_LEVEL);
                         }
                     }
                 }
@@ -687,11 +692,13 @@ namespace WinFinanceApp
                 {
                     // Annualized mode: check if annualizedData has any accounts
                     hasData = (annualizedData != null && annualizedData.Count > 0);
+                    this.chkAnnualized.Text = "Load Periodic\n   return ";
                 }
                 else
                 {
                     // Normal TWR mode: check if parser has any accounts
                     hasData = (parser?.accounts.Count > 0);
+                    this.chkAnnualized.Text = "Load Historical\n   return";
                 }
                 this.grpSelect.Visible = hasData;
                 this.grpMonths.Visible = !this.chkAnnualized.Checked & hasData;
@@ -748,7 +755,7 @@ namespace WinFinanceApp
                 this.openFileD.RestoreDirectory = false;
                 this.openFileD.ReadOnlyChecked = true;
                 this.openFileD.ShowReadOnly = true;
-
+                //periodical return
                 if (this.openFileD.ShowDialog() == DialogResult.OK)
                 {
                     string[] lines = System.IO.File.ReadAllLines(this.openFileD.FileName);
@@ -938,6 +945,7 @@ namespace WinFinanceApp
             }
             catch (Exception ex)
             {
+                this.comboMonths.DataSource = null;
                 this._logger.SentEvent($"Error loading annualized data: {ex.Message}", Logger.EnumLogLevel.EXCEPTION_LEVEL);
                 //  MessageBox.Show($"Error loading annualized data: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }

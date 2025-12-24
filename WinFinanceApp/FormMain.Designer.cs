@@ -205,7 +205,7 @@ namespace WinFinanceApp
             this.BtnReturn.Name = "BtnReturn";
             this.BtnReturn.Size = new System.Drawing.Size(135, 64);
             this.BtnReturn.TabIndex = 181;
-            this.BtnReturn.Text = "Historical Return";
+            this.BtnReturn.Text = "Analyze Return";
             this.BtnReturn.UseVisualStyleBackColor = true;
             this.BtnReturn.Click += new System.EventHandler(this.BtnReturn_Click);
             // 
