@@ -387,8 +387,29 @@ namespace WinFinanceApp
                     // Assign the color
                     barPlot.Bars[i].FillColor = barColor;
 
-                    // Add value label on top of each bar
-                    var txt = fPlot.Plot.Add.Text($"{values[i]:F2}%", positions[i], values[i]);
+                    // Calculate annualized return only for periods >= 12 months
+                    double? annualizedPercent = null;
+                    if (months >= 12)
+                     {
+                        try
+                        {
+                            // values[i] is in percentage units (e.g., 2.52 means 2.52%)
+                            double cumulativeDecimal = values[i] / 100.0;
+                            double annDecimal = Math.Pow(1.0 + cumulativeDecimal, 12.0 / months) - 1.0;
+                            annualizedPercent = annDecimal * 100.0;
+                        }
+                        catch
+                        {
+                            annualizedPercent = null;
+                        }
+                    }
+
+                    // Add value label on top of each bar. Show cumulative and annualized when available.
+                    string topLabelText = annualizedPercent.HasValue
+                        ? $"{values[i]:F2}%\nAnn: {annualizedPercent.Value:F2}%"
+                        : $"{values[i]:F2}%";
+
+                    var txt = fPlot.Plot.Add.Text(topLabelText, positions[i], values[i]);
                     txt.LabelFontSize = 10;
                     txt.LabelBold = true;
                     txt.LabelFontColor = ScottPlot.Color.FromColor(System.Drawing.Color.Black);
@@ -434,20 +455,16 @@ namespace WinFinanceApp
                     // Create a dummy scatter plot for legend with matching color
                     var dummyScatter = fPlot.Plot.Add.Scatter(new double[] { }, new double[] { });
                     dummyScatter.Color = barColor;
-                    dummyScatter.LegendText = $"{labels[i]}: {values[i]:F2}%";
-                    dummyScatter.LineWidth = 8;
-                    dummyScatter.MarkerSize = 0;
-                }
+                    // Include annualized value in legend if available
+                    if (annualizedPercent.HasValue)
+                        dummyScatter.LegendText = $"{labels[i]}: {values[i]:F2}% (Ann: {annualizedPercent.Value:F2}% )";
+                    else
+                        dummyScatter.LegendText = $"{labels[i]}: {values[i]:F2}%";
+                     dummyScatter.LineWidth = 8;
+                     dummyScatter.MarkerSize = 0;
+                 }
 
-                // Calculate total TWR across all accounts
-                double totalTWR = (double)twrPercentages["Total"]; //values.Sum();
-
-                // Add a dummy scatter for the total in the legend
-                var totalScatter = fPlot.Plot.Add.Scatter(new double[] { }, new double[] { });
-                totalScatter.Color = ScottPlot.Color.FromColor(System.Drawing.Color.Black);
-                totalScatter.LegendText = $"Total TWR: {totalTWR:F2}%";
-                totalScatter.LineWidth = 8;
-                totalScatter.MarkerSize = 0;
+                // NOTE: Total legend entry removed to avoid confusion with per-account bars
 
                 // Customize the plot
                 fPlot.Plot.Title($"TWR Performance: {months} months from {startMonth}");
