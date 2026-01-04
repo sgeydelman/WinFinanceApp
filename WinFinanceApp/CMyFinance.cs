@@ -14,6 +14,7 @@ namespace WinFinanceApp
         public Logger _logger;
         public bool isRothIra = false;
         public int Account;
+        public double thresholdTrigger = 5;
         private static CMyFinance _Instance;
         public enum AccountType
         {

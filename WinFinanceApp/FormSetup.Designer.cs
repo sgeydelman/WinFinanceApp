@@ -39,6 +39,8 @@
             this.label3 = new System.Windows.Forms.Label();
             this.lblTotal = new System.Windows.Forms.Label();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.numThreshold = new System.Windows.Forms.NumericUpDown();
+            this.label4 = new System.Windows.Forms.Label();
             this.comboAccount = new System.Windows.Forms.ComboBox();
             this.grpStrategy = new System.Windows.Forms.GroupBox();
             this.txtCashT = new System.Windows.Forms.TextBox();
@@ -49,6 +51,7 @@
             this.label6 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.dataGrid)).BeginInit();
             this.groupBox1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numThreshold)).BeginInit();
             this.grpStrategy.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -152,14 +155,57 @@
             // groupBox1
             // 
             this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox1.Controls.Add(this.numThreshold);
+            this.groupBox1.Controls.Add(this.label4);
             this.groupBox1.Controls.Add(this.comboAccount);
             this.groupBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.groupBox1.Location = new System.Drawing.Point(591, 24);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(182, 59);
+            this.groupBox1.Size = new System.Drawing.Size(182, 163);
             this.groupBox1.TabIndex = 14;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Select Account type";
+            // 
+            // numThreshold
+            // 
+            this.numThreshold.DecimalPlaces = 1;
+            this.numThreshold.Increment = new decimal(new int[] {
+            1,
+            0,
+            0,
+            65536});
+            this.numThreshold.Location = new System.Drawing.Point(40, 126);
+            this.numThreshold.Maximum = new decimal(new int[] {
+            50,
+            0,
+            0,
+            0});
+            this.numThreshold.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            65536});
+            this.numThreshold.Name = "numThreshold";
+            this.numThreshold.Size = new System.Drawing.Size(70, 26);
+            this.numThreshold.TabIndex = 24;
+            this.numThreshold.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.numThreshold.Value = new decimal(new int[] {
+            5,
+            0,
+            0,
+            0});
+            // 
+            // label4
+            // 
+            this.label4.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.label4.AutoSize = true;
+            this.label4.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label4.Location = new System.Drawing.Point(24, 76);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(108, 40);
+            this.label4.TabIndex = 23;
+            this.label4.Text = "Rebalance\r\nTreshhold %";
             // 
             // comboAccount
             // 
@@ -290,6 +336,8 @@
             this.Resize += new System.EventHandler(this.FormSetup_Resize);
             ((System.ComponentModel.ISupportInitialize)(this.dataGrid)).EndInit();
             this.groupBox1.ResumeLayout(false);
+            this.groupBox1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numThreshold)).EndInit();
             this.grpStrategy.ResumeLayout(false);
             this.grpStrategy.PerformLayout();
             this.ResumeLayout(false);
@@ -316,5 +364,7 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.NumericUpDown numThreshold;
+        private System.Windows.Forms.Label label4;
     }
 }

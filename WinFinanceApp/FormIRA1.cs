@@ -108,15 +108,19 @@ namespace WinFinanceApp
         {
             try
             {
+                // Only color the RebalanceValue cell (not the entire row) so deviation highlighting remains visible
                 if (e.RowIndex >= 0 && dataGrid.Columns[e.ColumnIndex].Name == "RebalanceValue")
                 {
-                    string st = dataGrid.Rows[e.RowIndex].Cells["RebalanceValue"].Value.ToString();
-                    double rebalanceValue = 0.0;
-                    double.TryParse(st, out rebalanceValue);
-                    if (rebalanceValue < 0)
-                        dataGrid.Rows[e.RowIndex].DefaultCellStyle.ForeColor = Color.Red;
+                    var cell = dataGrid.Rows[e.RowIndex].Cells["RebalanceValue"];
+                    double rebalanceValue;
+                    if (double.TryParse(cell.Value?.ToString(), out rebalanceValue))
+                    {
+                        cell.Style.ForeColor = (rebalanceValue < 0) ? Color.Red : Color.Green;
+                    }
                     else
-                        dataGrid.Rows[e.RowIndex].DefaultCellStyle.ForeColor = Color.Green;
+                    {
+                        cell.Style.ForeColor = Color.Black;
+                    }
                 }
             }
             catch (Exception ex)
@@ -441,28 +445,60 @@ namespace WinFinanceApp
                     // Populate grid
                     foreach (var kvp in accountDictionary)
                     {
+                        double curPercent = Math.Round(kvp.Value.curPercent, 3);
+                        double targetPercent = kvp.Value.targetPercent;
+
+                        string desc = kvp.Value.desc;
                         if (kvp.Key.ToString().Contains("FMPXX") || kvp.Key.ToString().Contains("FDRXX"))
-                            dataGrid.Rows.Add(
-                            "💰 " + kvp.Value.desc,
+                            desc = "💰 " + desc;
+
+                        // Calculate relative deviation using target percent as denominator:
+                        // relativeDeviation = (Current% - Target%) / Target% * 100
+                        string deviationStr;
+                        double relativeDeviation = double.NaN;
+                        bool thresholdExceeded = false;
+                        double threshold = this.MyFinance?.thresholdTrigger ?? 0.0;
+                        if (Math.Abs(targetPercent) > 1e-9)
+                        {
+                            relativeDeviation = ((curPercent - targetPercent) / targetPercent) * 100.0;
+                            deviationStr = string.Format("{0:+0.00;-0.00;0.00}%", relativeDeviation);
+                            if (threshold > 0 && Math.Abs(relativeDeviation) >= threshold)
+                                thresholdExceeded = true; // trigger on absolute relative deviation
+                        }
+                        else
+                        {
+                            // Target percent is zero or undefined: relative deviation not defined
+                            deviationStr = "N/A";
+                            thresholdExceeded = false;
+                        }
+
+                        int rowIndex = dataGrid.Rows.Add(
+                            desc,
                             kvp.Key,
                             kvp.Value.value,
-                            Math.Round(kvp.Value.curPercent, 3),
-                            kvp.Value.targetPercent,
+                            curPercent,
+                            targetPercent,
                             kvp.Value.valRebalance,
-                            Math.Round(kvp.Value.simulatedPercent, 3) // Replaced deviation with Simulated Value %
+                            deviationStr
                         );
-                        else
-                            dataGrid.Rows.Add(
-                           kvp.Value.desc,
-                           kvp.Key,
-                           kvp.Value.value,
-                           Math.Round(kvp.Value.curPercent, 3),
-                           kvp.Value.targetPercent,
-                           kvp.Value.valRebalance,
-                           Math.Round(kvp.Value.simulatedPercent, 3) // Replaced deviation with Simulated Value %
-                           );
 
+                        try
+                        {
+                            var row = dataGrid.Rows[rowIndex];
+                            var devCell = row.Cells["Deviation"];
+                            devCell.Style.Font = new Font(dataGrid.Font, FontStyle.Regular);
+                            devCell.Style.ForeColor = Color.Black;
 
+                            if (thresholdExceeded)
+                            {
+                                row.DefaultCellStyle.BackColor = Color.LightSalmon;
+                                row.DefaultCellStyle.ForeColor = Color.Black;
+                                devCell.Style.Font = new Font(dataGrid.Font, FontStyle.Bold);
+                                devCell.Style.ForeColor = Color.DarkRed;
+                                devCell.Value = "⚠ " + deviationStr;
+                            }
+                        }
+                        catch { }
                     }
                     // --------------------------------------------------------------------
                     // Report Investment strategy (stocks/Bonds/Cash) : curent vs target
@@ -654,7 +690,7 @@ namespace WinFinanceApp
                 // Populate grid
                 foreach (var kvp in accountDictionary)
                 {
-                    dataGrid.Rows.Add(kvp.Value.desc, kvp.Key, kvp.Value.value, Math.Round(kvp.Value.curPercent, 3), kvp.Value.targetPercent, kvp.Value.valRebalance, kvp.Value.deviation);
+                    dataGrid.Rows.Add(kvp.Value.desc, kvp.Key, kvp.Value.value, Math.Round(kvp.Value.curPercent, 3), kvp.Value.targetPercent, kvp.Value.valRebalance, kvp Value.deviation);
                 }
             }
             catch (Exception ex)

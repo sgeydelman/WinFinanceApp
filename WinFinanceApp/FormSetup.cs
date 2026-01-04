@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Drawing.Text;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -24,6 +25,7 @@ namespace WinFinanceApp
     {
         Logger _logger;
         Ini inif;
+        Ini iniF;
         protected CMyFinance MyFinance;
         double TotalPercent = 0;
         public FormSetup()
@@ -34,11 +36,11 @@ namespace WinFinanceApp
         {
           //  Logger.Create(Properties.Settings.Default.SetupPath);
             this._logger = Logger.Instance;
-            inif = new Ini(_logger.SetupPath);
+            iniF = new Ini(_logger.SetupPath);
             this.MyFinance = CMyFinance.Instance;
-            this.ReadAll();
-            this.comboAccount.SelectedIndex = (int)CMyFinance.AccountType.SamIRA;
             
+            this.comboAccount.SelectedIndex = (int)CMyFinance.AccountType.SamIRA;
+            this.ReadAll();
             // Initial layout adjustment
             AdjustLayout();
         }
@@ -79,7 +81,8 @@ namespace WinFinanceApp
         {
             try
             {
-              //  inif = new Ini(_logger.SetupPath);
+                //  inif = new Ini(_logger.SetupPath);
+                UpdateInif();
                 string[] strs = this.inif.GetSectionNames();
                 this.dataGrid.Rows.Clear();
                 this.dataGrid.Refresh();
@@ -90,7 +93,8 @@ namespace WinFinanceApp
                 }
                 List<SetingStructure> dataList = GetDataFromDataGridView(); // new List<SetingStructure>();
                 lblTotal.Text = dataList.Sum(item => item.TargetPercent).ToString();
-                
+                this.numThreshold.Value = (decimal)iniF.GetDouble("Settings", "RebalanceThresholdPercent", 5);
+
             }
             catch (Exception ex)
             {
@@ -101,7 +105,7 @@ namespace WinFinanceApp
         {
             try
             {
-                
+                this.UpdateInif();
                 List<SetingStructure> dataList = GetDataFromDataGridView(); // new List<SetingStructure>();
                 TotalPercent =  dataList.Sum(item => item.TargetPercent);
                 if (TotalPercent != 100)
@@ -117,8 +121,10 @@ namespace WinFinanceApp
                         this.inif.WriteValue(i.ToString(), "Note", data.Note);
                     i++;
                 }
+                this.iniF.WriteValue("Settings", "RebalanceThresholdPercent", (double)numThreshold.Value);
+                this.MyFinance.thresholdTrigger = (double)numThreshold.Value;
 
-               
+
 
             }
             catch (Exception ex)
@@ -275,29 +281,35 @@ namespace WinFinanceApp
             try
             {
                 this.MyFinance.Account = comboAccount.SelectedIndex;
-                switch (comboAccount.SelectedIndex)
-                {
-                    case (int)CMyFinance.AccountType.LenaIRA:
-                        inif = new Ini(Properties.Settings.Default.SetupLenaIRA);
-                        break;
-                    case (int)CMyFinance.AccountType.LenaRothIRA:
-                        inif = new Ini(Properties.Settings.Default.SetupLenaROTH);
-                        break;
-                    case (int)CMyFinance.AccountType.SamIRA:
-                        inif = new Ini(Properties.Settings.Default.SetupSamIRA);
-                        break;
-                    case (int)CMyFinance.AccountType.SamRothIRA:
-                        inif = new Ini(Properties.Settings.Default.SetupSamROTH);
-                        break;
-                    case (int)CMyFinance.AccountType.Other:
-                        inif = new Ini(Properties.Settings.Default.SetupOther);
-                        break;
-                }
+                
                 this.ReadAll();
             }
             catch (Exception ex)
             {
                 this._logger.SentEvent(ex.ToString(), Logger.EnumLogLevel.EXCEPTION_LEVEL);
+            }
+
+             
+        }
+        private void UpdateInif()
+        {
+            switch (comboAccount.SelectedIndex)
+            {
+                case (int)CMyFinance.AccountType.LenaIRA:
+                    inif = new Ini(Properties.Settings.Default.SetupLenaIRA);
+                    break;
+                case (int)CMyFinance.AccountType.LenaRothIRA:
+                    inif = new Ini(Properties.Settings.Default.SetupLenaROTH);
+                    break;
+                case (int)CMyFinance.AccountType.SamIRA:
+                    inif = new Ini(Properties.Settings.Default.SetupSamIRA);
+                    break;
+                case (int)CMyFinance.AccountType.SamRothIRA:
+                    inif = new Ini(Properties.Settings.Default.SetupSamROTH);
+                    break;
+                case (int)CMyFinance.AccountType.Other:
+                    inif = new Ini(Properties.Settings.Default.SetupOther);
+                    break;
             }
         }
     }

@@ -330,7 +330,7 @@ namespace WinFinanceApp
             // 
             // Deviation
             // 
-            this.Deviation.HeaderText = "Simualted rebalance result %";
+            this.Deviation.HeaderText = "Target deviation %";
             this.Deviation.Name = "Deviation";
             this.Deviation.ReadOnly = true;
             // 
