@@ -245,6 +245,11 @@ namespace WinFinanceApp
                 for (int i = 0; i < 20; i++)
                 {
                     string symbol = this.inif.GetString(i.ToString(), "symbol", "");
+                    // if symbol contains "FDRXX" make symbol "FDRXX" only to match cash fund entries
+                    if (symbol.Contains("FDRXX"))
+                        symbol = "FDRXX";
+
+
                     if (string.IsNullOrEmpty(symbol) || symbol == "?")
                         continue;
                     double targetPct = this.inif.GetDouble(i.ToString(), "%", 0);
@@ -330,7 +335,12 @@ namespace WinFinanceApp
                         // Symbol
                         string symbol = null;
                         if (idxSymbol >= 0 && idxSymbol < cols.Length)
+                        {
                             symbol = cols[idxSymbol].Trim();
+                            //if symbol contains "FDRXX" make symbol "FDRXX" only to match cash fund entries
+                            if (symbol.Contains("FDRXX"))
+                                symbol = "FDRXX";
+                        }
                         else
                         {
                             for (int c = 0; c < cols.Length; c++)
@@ -343,6 +353,9 @@ namespace WinFinanceApp
                             }
                             if (string.IsNullOrEmpty(symbol))
                                 symbol = cols.FirstOrDefault(x => !string.IsNullOrWhiteSpace(x))?.Trim() ?? ("N/A_" + (naCounter++).ToString());
+                            //if symbol contains "FDRXX" make symbol "FDRXX" only to match cash fund entries
+                            if (symbol.Contains("FDRXX"))
+                                symbol = "FDRXX";
                         }
 
                         string descVal = (idxDescription >= 0 && idxDescription < cols.Length) ? cols[idxDescription].Trim() : string.Empty;
