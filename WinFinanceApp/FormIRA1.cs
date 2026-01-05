@@ -202,8 +202,9 @@ namespace WinFinanceApp
             if (string.IsNullOrEmpty(firstColumn))
                 return true;
 
-            if (firstColumn.StartsWith("\""))
-                return true;
+            // Do not treat quoted lines (common in CSV headers) as end-of-data
+            // if (firstColumn.StartsWith("\""))
+            //     return true;
 
             if (firstColumn.StartsWith("The data and information") ||
                 firstColumn.StartsWith("Brokerage services") ||
@@ -212,6 +213,7 @@ namespace WinFinanceApp
 
             return false;
         }
+
         private void LoadDataFromCSV(object sender, EventArgs e)
         {
             try
@@ -234,277 +236,316 @@ namespace WinFinanceApp
 
                 this.openFileD.ReadOnlyChecked = true;
                 this.openFileD.ShowReadOnly = true;
-                if (this.openFileD.ShowDialog() == DialogResult.OK)
+                if (this.openFileD.ShowDialog() != DialogResult.OK)
+                    return;
+
+                string[] strings = System.IO.File.ReadAllLines(this.openFileD.FileName);
+
+                // Load target positions from config
+                for (int i = 0; i < 20; i++)
                 {
-                    string[] strings = System.IO.File.ReadAllLines(this.openFileD.FileName);
+                    string symbol = this.inif.GetString(i.ToString(), "symbol", "");
+                    if (string.IsNullOrEmpty(symbol) || symbol == "?")
+                        continue;
+                    double targetPct = this.inif.GetDouble(i.ToString(), "%", 0);
+                    positions.Add(new KeyValuePair<string, double>(symbol, targetPct));
+                }
 
-                    // Load target positions from config
-                    for (int i = 0; i < 20; i++)
+                string account = Path.GetFileName(this.openFileD.FileName);
+
+                int idxSymbol = -1, idxDescription = -1, idxCurrentValue = -1, idxPercent = -1;
+                int headerIndex = -1;
+
+                // Find header row
+                for (int i = 0; i < strings.Length; i++)
+                {
+                    string line = strings[i];
+                    if (IsEndOfDataLine(line))
+                        continue;
+                    string lower = line.ToLowerInvariant();
+                    if (lower.Contains("symbol") || lower.Contains("% of acct") || lower.Contains("% of account") || lower.Contains("value") || lower.Contains("%"))
                     {
-                        string symbol = this.inif.GetString(i.ToString(), "symbol", "");
-                        if (string.IsNullOrEmpty(symbol) || symbol == "?")
-                            continue;
-                        double targetPct = this.inif.GetDouble(i.ToString(), "%", 0);
-                        positions.Add(new KeyValuePair<string, double>(symbol, targetPct));
-                    }
+                        headerIndex = i;
+                        string[] headerCols = SplitCsvLine(line);
+                        if ((headerCols == null || headerCols.Length == 1) && line.Contains('\t'))
+                            headerCols = line.Split('\t');
 
-                    string account = "";
-                    bool foundHeader = false;
-                    int naCounter = 0; // Ensures unique keys for "Pending Activity"
-
-                    foreach (string str in strings)
-                    {
-                        // Skip until we find the header row
-                        if (!foundHeader)
+                        for (int c = 0; c < headerCols.Length; c++)
                         {
-                            if (str.Contains("Account Number") || str.Contains("Account Name") || str.Contains("Symbol"))
-                            {
-                                foundHeader = true;
-                            }
-                            continue;
+                            string col = headerCols[c].Trim().ToLowerInvariant();
+                            if (col.Contains("symbol")) idxSymbol = c;
+                            else if (col.Contains("description") || col.Contains("position") || col.Contains("security")) idxDescription = c;
+                            else if (col.Contains("current value") || col.Contains("market value") || col.Contains("marketvalue") || col == "value" || col.Contains(" value")) idxCurrentValue = c;
+                            else if (col.Contains("% of acct") || col.Contains("% of account") || col.Contains("percent") || col.Contains("% of") || col.Contains("%")) idxPercent = c;
                         }
+                        break;
+                    }
+                }
 
-                        // Stop parsing if we hit disclaimer text or empty lines
-                        if (IsEndOfDataLine(str))
+                // If filename contains 'new' use known mapping (provided by user)
+                var fname = Path.GetFileName(this.openFileD.FileName).ToLowerInvariant();
+                if (fname.Contains("new"))
+                {
+                    // According to provided header: Value is column index 14, '% of Acct' is index 15 (0-based)
+                    idxSymbol = idxSymbol == -1 ? 0 : idxSymbol;
+                    idxCurrentValue = 14;
+                    idxPercent = 15;
+                    this._logger.SentEvent($"Using preset mapping for '{fname}': idxSymbol={idxSymbol}, idxCurrentValue={idxCurrentValue}, idxPercent={idxPercent}", Logger.EnumLogLevel.INFO_LEVEL);
+                }
+
+                this._logger.SentEvent($"CSV headerIndex={headerIndex}, idxSymbol={idxSymbol}, idxDescription={idxDescription}, idxCurrentValue={idxCurrentValue}, idxPercent={idxPercent}", Logger.EnumLogLevel.INFO_LEVEL);
+
+                int startRow = (headerIndex >= 0) ? headerIndex + 1 : 0;
+                int naCounter = 0;
+
+                // Parse rows
+                for (int r = startRow; r < strings.Length; r++)
+                {
+                    string line = strings[r];
+                    try
+                    {
+                        if (IsEndOfDataLine(line))
                             break;
 
-                        string[] s = SplitCsvLine(str);
-
-                        // Skip if not enough columns
-                        if (s.Length < 8)
+                        var cols = SplitCsvLine(line);
+                        if (cols == null || cols.Length == 0)
                             continue;
 
-                        // Removed 'deviation' from declarations
-                        double value = 0, curPercent = 0, targetPercent = 0, valRebalance = 0;
-                        account = string.Format("{0} #{1}", s[1], s[0]);
-                        string desc = string.Format("{0}", s[3]);
-                        string symbol = s[2];
+                        // Removed per-row info logging to improve performance
 
-                        if (s.Contains("Pending Activity"))
+                        bool allEmpty = true;
+                        foreach (var c in cols) if (!string.IsNullOrWhiteSpace(c)) { allEmpty = false; break; }
+                        if (allEmpty) continue;
+
+                        // Pending Activity
+                        if (cols.Any(col => col.IndexOf("Pending Activity", StringComparison.OrdinalIgnoreCase) >= 0))
                         {
-                            desc = s[2];
-                            symbol = $"N/A_{naCounter++}"; // Fix: Make the key unique
-                            value = ParseCsvValue(s[7]);
-
-                            // Updated constructor call (no deviation argument)
-                            accountDictionary.Add(symbol, new AcountRecord(desc, value, curPercent, targetPercent, valRebalance));
+                            string desc = cols.Length > 2 ? cols[2].Trim() : "Pending Activity";
+                            string key = $"N/A_{naCounter++}";
+                            double val = (idxCurrentValue >= 0 && idxCurrentValue < cols.Length) ? ParseCsvValue(cols[idxCurrentValue]) : ParseCsvValue(cols.Last());
+                            accountDictionary[key] = new AcountRecord(desc, val, 0.0, 0.0, 0.0);
                             continue;
                         }
 
-                        if (s.Length > 7)
-                        {
-                            value = ParseCsvValue(s[7]);
-                        }
-
-                        if (s.Length > 12)
-                        {
-                            curPercent = ParsePercentageValue(s[12]);
-                        }
-
-                        KeyValuePair<string, double> foundPair = positions.FirstOrDefault(pair => pair.Key == symbol);
-
-                        // If no target is found, set target to 0% as requested
-                        if (foundPair.Key == null)
-                        {
-                            this._logger.SentEvent(string.Format("position {0} not found in configuration, setting target to 0%.", symbol), Logger.EnumLogLevel.WARNING_LEVEL);
-                            targetPercent = 0.0;
-                        }
+                        // Symbol
+                        string symbol = null;
+                        if (idxSymbol >= 0 && idxSymbol < cols.Length)
+                            symbol = cols[idxSymbol].Trim();
                         else
                         {
-                            targetPercent = foundPair.Value;
+                            for (int c = 0; c < cols.Length; c++)
+                            {
+                                var cand = cols[c].Trim();
+                                if (cand.Length >= 1 && cand.Length <= 6 && System.Text.RegularExpressions.Regex.IsMatch(cand, "^[A-Za-z0-9.\\-]+$"))
+                                {
+                                    symbol = cand; break;
+                                }
+                            }
+                            if (string.IsNullOrEmpty(symbol))
+                                symbol = cols.FirstOrDefault(x => !string.IsNullOrWhiteSpace(x))?.Trim() ?? ("N/A_" + (naCounter++).ToString());
+                        }
+
+                        string descVal = (idxDescription >= 0 && idxDescription < cols.Length) ? cols[idxDescription].Trim() : string.Empty;
+
+                        double valueVal = 0.0;
+                        if (idxCurrentValue >= 0 && idxCurrentValue < cols.Length)
+                            valueVal = ParseCsvValue(cols[idxCurrentValue]);
+                        else
+                        {
+                            for (int c = cols.Length - 1; c >= 0; c--)
+                            {
+                                string tok = cols[c];
+                                if (string.IsNullOrWhiteSpace(tok)) continue;
+                                double tv = ParseCsvValue(tok);
+                                if (tv != 0.0 || tok.Contains("$") || tok.Contains(",") || tok.Contains("(") || System.Text.RegularExpressions.Regex.IsMatch(tok, "\\d"))
+                                {
+                                    valueVal = tv; break;
+                                }
+                            }
+                        }
+
+                        double percentVal = 0.0;
+                        if (idxPercent >= 0 && idxPercent < cols.Length)
+                            percentVal = ParsePercentageValue(cols[idxPercent]);
+                        else
+                        {
+                            for (int c = 0; c < cols.Length; c++)
+                            {
+                                if (cols[c].Contains("%")) { percentVal = ParsePercentageValue(cols[c]); break; }
+                            }
+                        }
+
+                        // Target percent from config
+                        KeyValuePair<string, double> foundPair = positions.FirstOrDefault(p => p.Key == symbol);
+                        double targetPercent = (foundPair.Key == null) ? 0.0 : foundPair.Value;
+
+                        if (!accountDictionary.ContainsKey(symbol))
+                            accountDictionary.Add(symbol, new AcountRecord(descVal, valueVal, percentVal, targetPercent, 0.0));
+                        else
+                        {
+                            var ex = accountDictionary[symbol];
+                            ex.value += valueVal;
+                            accountDictionary[symbol] = ex;
                         }
 
                         TotalTargetPercent += targetPercent;
+                    }
+                    catch (Exception rowEx)
+                    {
+                        // Keep only important warnings/errors
+                        this._logger.SentEvent("Error parsing CSV row: " + rowEx.ToString(), Logger.EnumLogLevel.WARNING_LEVEL);
+                        continue;
+                    }
+                }
 
-                        // Ensure no duplicate keys are added
-                        if (!accountDictionary.ContainsKey(symbol))
-                        {
-                            // Updated constructor call (no deviation argument)
-                            accountDictionary.Add(symbol, new AcountRecord(desc, value, curPercent, targetPercent, valRebalance));
-                        }
+                grpBox.Text = string.Format("Account Monitor: {0}                   {1}", account, Path.GetFileName(this.openFileD.FileName));
+
+                TotalCurValue = Math.Round(accountDictionary.Values.Sum(dp => dp.value), 1);
+                TotalTargetPercent = positions.Sum(pair => pair.Value);
+                this.lblTotalVal.Text = TotalCurValue.ToString();
+                this.lblTotalTarget.Text = TotalTargetPercent.ToString();
+
+                // Rebalance computation
+                double RawBuysNeeded = 0;
+                double RawSellsGenerated = 0;
+                Dictionary<string, double> RawAdjustments = new Dictionary<string, double>();
+
+                foreach (var key in accountDictionary.Keys.ToList())
+                {
+                    var record = accountDictionary[key];
+                    double curPct = (TotalCurValue > 1e-9) ? (record.value / TotalCurValue * 100.0) : 0.0;
+                    double rawRebalance = (record.targetPercent / 100.0 - curPct / 100.0) * TotalCurValue;
+                    RawAdjustments[key] = rawRebalance;
+                    if (rawRebalance > 0) RawBuysNeeded += rawRebalance; else RawSellsGenerated += rawRebalance;
+                    record.curPercent = curPct;
+                    accountDictionary[key] = record;
+                }
+
+                double TotalFundsFromSales = Math.Abs(RawSellsGenerated);
+                double scaleFactor = 1.0;
+                if (RawBuysNeeded > 0 && TotalFundsFromSales < RawBuysNeeded)
+                    scaleFactor = TotalFundsFromSales / RawBuysNeeded;
+
+                Dictionary<string, double> FinalRebalanceValues = new Dictionary<string, double>();
+                foreach (var kv in RawAdjustments)
+                {
+                    double raw = kv.Value;
+                    double finalVal = raw > 0 ? Math.Round(raw * scaleFactor, 3) : Math.Round(raw, 3);
+                    FinalRebalanceValues[kv.Key] = finalVal;
+                }
+
+                double newTotalValue = TotalCurValue;
+                var keysSnapshot = accountDictionary.Keys.ToList();
+                foreach (var key in keysSnapshot)
+                {
+                    var rec = accountDictionary[key];
+                    if (FinalRebalanceValues.ContainsKey(key)) rec.valRebalance = FinalRebalanceValues[key];
+                    rec.curPercent = (TotalCurValue > 1e-9) ? (rec.value / TotalCurValue * 100.0) : 0.0;
+                    rec.simulatedValue = rec.value + rec.valRebalance;
+                    rec.simulatedPercent = (newTotalValue > 1e-9) ? (rec.simulatedValue / newTotalValue * 100.0) : 0.0;
+                    accountDictionary[key] = rec;
+                }
+
+                double ResidualError = accountDictionary.Values.Sum(r => r.valRebalance);
+                string AbsorberSymbol = accountDictionary.Keys.FirstOrDefault(k => k.Contains("FMPXX") || k.Contains("FDRXX"));
+                if (!string.IsNullOrEmpty(AbsorberSymbol) && Math.Abs(ResidualError) > 0.001)
+                {
+                    var absorber = accountDictionary[AbsorberSymbol];
+                    absorber.valRebalance = Math.Round(absorber.valRebalance - ResidualError, 3);
+                    absorber.simulatedValue = absorber.value + absorber.valRebalance;
+                    absorber.simulatedPercent = (newTotalValue > 1e-9) ? (absorber.simulatedValue / newTotalValue * 100.0) : 0.0;
+                    accountDictionary[AbsorberSymbol] = absorber;
+                }
+
+                TotalCurPercent = Math.Round(accountDictionary.Values.Sum(dp => double.IsNaN(dp.curPercent) ? 0.0 : dp.curPercent), 1);
+                this.lblTotalCur.Text = TotalCurPercent.ToString();
+                double totalRebalance = Math.Round(accountDictionary.Values.Sum(dp => double.IsNaN(dp.valRebalance) ? 0.0 : dp.valRebalance), 3);
+                lblTotalRebalance.Text = totalRebalance.ToString();
+
+                // Populate grid with styling for rebalance and deviation
+                foreach (var kvp in accountDictionary)
+                {
+                    double curPercent = double.IsNaN(kvp.Value.curPercent) ? 0.0 : Math.Round(kvp.Value.curPercent, 3);
+                    double targetPercent = kvp.Value.targetPercent;
+                    string desc = kvp.Value.desc ?? string.Empty;
+                    if (kvp.Key.ToString().Contains("FMPXX") || kvp.Key.ToString().Contains("FDRXX"))
+                        desc = "💰 " + desc;
+
+                    string deviationStr;
+                    if (Math.Abs(targetPercent) > 1e-9)
+                    {
+                        double relativeDeviation = ((curPercent - targetPercent) / targetPercent) * 100.0;
+                        deviationStr = string.Format("{0:+0.00;-0.00;0.00}%", relativeDeviation);
+                    }
+                    else
+                    {
+                        deviationStr = "N/A";
                     }
 
-                    grpBox.Text = string.Format("Account Monitor: {0}                   {1}", account, Path.GetFileName(this.openFileD.FileName));
-                    //  }
+                    double displayValue = double.IsNaN(kvp.Value.value) ? 0.0 : kvp.Value.value;
+                    double displayRebalance = double.IsNaN(kvp.Value.valRebalance) ? 0.0 : kvp.Value.valRebalance;
 
-                    TotalCurValue = Math.Round(accountDictionary.Values.Sum(dp => dp.value), 1);
-                    TotalTargetPercent = positions.Sum(pair => pair.Value);
-                    this.lblTotalVal.Text = TotalCurValue.ToString();
-                    this.lblTotalTarget.Text = TotalTargetPercent.ToString();
+                    int rowIndex = dataGrid.Rows.Add(
+                        desc,
+                        kvp.Key,
+                        displayValue,
+                        curPercent,
+                        targetPercent,
+                        displayRebalance,
+                        deviationStr
+                    );
 
-                    // --------------------------------------------------------------------
-                    // START: CASH-AWARE REBALANCING LOGIC (Decoupled Phases)
-                    // --------------------------------------------------------------------
-
-                    double RawBuysNeeded = 0;
-                    double RawSellsGenerated = 0;
-                    Dictionary<string, double> RawAdjustments = new Dictionary<string, double>();
-
-                    // --- Phase 1: Calculate Raw Rebalance Values (NO accountDictionary MODIFICATION) ---
-                    foreach (var kvp in accountDictionary)
+                    try
                     {
-                        AcountRecord record = kvp.Value;
+                        var row = dataGrid.Rows[rowIndex];
 
-                        record.curPercent = record.value / TotalCurValue * 100;
-                        double rawRebalance = (record.targetPercent / 100.00 - record.curPercent / 100) * TotalCurValue;
-
-                        RawAdjustments.Add(kvp.Key, rawRebalance);
-
-                        if (rawRebalance > 0)
+                        // Style rebalance value: green for positive, red for negative
+                        var rebCell = row.Cells[5];
+                        double rebVal;
+                        if (double.TryParse(rebCell.Value?.ToString(), out rebVal))
                         {
-                            RawBuysNeeded += rawRebalance;
-                        }
-                        else
-                        {
-                            RawSellsGenerated += rawRebalance;
-                        }
-                    }
-
-                    double TotalFundsFromSales = Math.Abs(RawSellsGenerated);
-
-                    // --- Phase 2: Calculate Final Scaled Rebalance Values (NO accountDictionary MODIFICATION) ---
-
-                    double scaleFactor = 1.0;
-                    if (RawBuysNeeded > 0 && TotalFundsFromSales < RawBuysNeeded)
-                    {
-                        scaleFactor = TotalFundsFromSales / RawBuysNeeded;
-                    }
-
-                    Dictionary<string, double> FinalRebalanceValues = new Dictionary<string, double>();
-                    List<string> keysToUpdate = RawAdjustments.Keys.ToList();
-
-                    foreach (var key in keysToUpdate)
-                    {
-                        double rawRebalance = RawAdjustments[key];
-                        double finalValRebalance;
-
-                        if (rawRebalance > 0)
-                        {
-                            finalValRebalance = Math.Round(rawRebalance * scaleFactor, 3);
-                        }
-                        else
-                        {
-                            finalValRebalance = Math.Round(rawRebalance, 3);
+                            rebCell.Style.ForeColor = (rebVal < 0) ? Color.Red : Color.Green;
                         }
 
-                        FinalRebalanceValues.Add(key, finalValRebalance);
-                    }
+                        // Deviation cell styling and threshold indicator
+                        var devCell = row.Cells[6];
+                        devCell.Style.Font = new Font(dataGrid.Font, FontStyle.Regular);
+                        devCell.Style.ForeColor = Color.Black;
 
-                    // --------------------------------------------------------------------
-                    // Phase 3: Apply Updates, Zero-Out, and Run Simulation
-                    // --------------------------------------------------------------------
-                    double newTotalValue = TotalCurValue; // Total remains constant as net rebalance will be zero.
-
-                    // Apply FinalRebalanceValues to the main dictionary
-                    foreach (var kvp in accountDictionary.Keys.ToList())
-                    {
-                        AcountRecord record = accountDictionary[kvp];
-
-                        if (FinalRebalanceValues.ContainsKey(kvp))
-                        {
-                            record.valRebalance = FinalRebalanceValues[kvp];
-                        }
-
-                        // Recalculate curPercent (optional, but ensures final struct state is accurate)
-                        record.curPercent = record.value / TotalCurValue * 100;
-
-                        // SIMULATION: Calculate new value and percentage
-                        record.simulatedValue = record.value + record.valRebalance;
-                        record.simulatedPercent = (record.simulatedValue / newTotalValue) * 100.0;
-
-                        accountDictionary[kvp] = record;
-                    }
-
-                    // Zero out the net rebalance (due to rounding) by assigning error to cash position
-                    double ResidualError = accountDictionary.Values.Sum(dp => dp.valRebalance);
-                    string AbsorberSymbol = accountDictionary.Keys.FirstOrDefault(k => k.Contains("FMPXX") || k.Contains("FDRXX"));
-
-                    if (!string.IsNullOrEmpty(AbsorberSymbol) && Math.Abs(ResidualError) > 0.001)
-                    {
-                        AcountRecord absorberRecord = accountDictionary[AbsorberSymbol];
-
-                        absorberRecord.valRebalance = Math.Round(absorberRecord.valRebalance - ResidualError, 3);
-
-                        // Rerun simulation for the modified absorber record
-                        absorberRecord.simulatedValue = absorberRecord.value + absorberRecord.valRebalance;
-                        absorberRecord.simulatedPercent = (absorberRecord.simulatedValue / newTotalValue) * 100.0;
-
-                        accountDictionary[AbsorberSymbol] = absorberRecord;
-                    }
-
-                    // --------------------------------------------------------------------
-                    // END: CASH-AWARE REBALANCING LOGIC
-                    // --------------------------------------------------------------------
-
-                    TotalCurPercent = Math.Round(accountDictionary.Values.Sum(dp => dp.curPercent), 1);
-                    this.lblTotalCur.Text = TotalCurPercent.ToString();
-
-                    // This value should now be 0.000 
-                    lblTotalRebalance.Text = Math.Round(accountDictionary.Values.Sum(dp => dp.valRebalance), 3).ToString();
-
-                    // Populate grid
-                    foreach (var kvp in accountDictionary)
-                    {
-                        double curPercent = Math.Round(kvp.Value.curPercent, 3);
-                        double targetPercent = kvp.Value.targetPercent;
-
-                        string desc = kvp.Value.desc;
-                        if (kvp.Key.ToString().Contains("FMPXX") || kvp.Key.ToString().Contains("FDRXX"))
-                            desc = "💰 " + desc;
-
-                        // Calculate relative deviation using target percent as denominator:
-                        // relativeDeviation = (Current% - Target%) / Target% * 100
-                        string deviationStr;
-                        double relativeDeviation = double.NaN;
+                        double relativeDeviation = 0.0;
                         bool thresholdExceeded = false;
-                        double threshold = this.MyFinance?.thresholdTrigger ?? 0.0;
                         if (Math.Abs(targetPercent) > 1e-9)
                         {
                             relativeDeviation = ((curPercent - targetPercent) / targetPercent) * 100.0;
-                            deviationStr = string.Format("{0:+0.00;-0.00;0.00}%", relativeDeviation);
-                            if (threshold > 0 && Math.Abs(relativeDeviation) >= threshold)
-                                thresholdExceeded = true; // trigger on absolute relative deviation
+                            double threshold = this.MyFinance?.thresholdTrigger ?? 0.0;
+                            if (threshold > 0 && Math.Abs(relativeDeviation) >= threshold) thresholdExceeded = true;
                         }
-                        else
+
+                        if (thresholdExceeded)
                         {
-                            // Target percent is zero or undefined: relative deviation not defined
-                            deviationStr = "N/A";
-                            thresholdExceeded = false;
+                            row.DefaultCellStyle.BackColor = Color.LightSalmon;
+                            row.DefaultCellStyle.ForeColor = Color.Black;
+                            devCell.Style.Font = new Font(dataGrid.Font, FontStyle.Bold);
+                            devCell.Style.ForeColor = Color.DarkRed;
+                            devCell.Value = "⚠ " + deviationStr;
                         }
-
-                        int rowIndex = dataGrid.Rows.Add(
-                            desc,
-                            kvp.Key,
-                            kvp.Value.value,
-                            curPercent,
-                            targetPercent,
-                            kvp.Value.valRebalance,
-                            deviationStr
-                        );
-
-                        try
-                        {
-                            var row = dataGrid.Rows[rowIndex];
-                            var devCell = row.Cells["Deviation"];
-                            devCell.Style.Font = new Font(dataGrid.Font, FontStyle.Regular);
-                            devCell.Style.ForeColor = Color.Black;
-
-                            if (thresholdExceeded)
-                            {
-                                row.DefaultCellStyle.BackColor = Color.LightSalmon;
-                                row.DefaultCellStyle.ForeColor = Color.Black;
-                                devCell.Style.Font = new Font(dataGrid.Font, FontStyle.Bold);
-                                devCell.Style.ForeColor = Color.DarkRed;
-                                devCell.Value = "⚠ " + deviationStr;
-                            }
-                        }
-                        catch { }
                     }
-                    // --------------------------------------------------------------------
-                    // Report Investment strategy (stocks/Bonds/Cash) : curent vs target
-                    // --------------------------------------------------------------------
+                    catch { }
+                }
+
+                // Load global threshold setting into MyFinance (defensive)
+                try
+                {
+                    var globalIni = new Ini(this._logger.SetupPath);
+                    double cfgThreshold = globalIni.GetDouble("Settings", "RebalanceThresholdPercent", this.MyFinance.thresholdTrigger);
+                    this.MyFinance.thresholdTrigger = cfgThreshold;
+                }
+                catch { }
+
+                // Investment strategy summary: compute current vs target for Stocks/Bonds/Cash
+                try
+                {
                     string[] strs = this.inif.GetSectionNames();
-                    List<SetingStructure> dataList = new List<SetingStructure>();
                     double curStocks = 0, targetStocks = 0, curBonds = 0, targetBonds = 0, curCash = 0, targetCash = 0;
                     foreach (string s in strs)
                     {
@@ -514,38 +555,32 @@ namespace WinFinanceApp
                             TargetPercent = this.inif.GetDouble(s, "%", 0),
                             Note = this.inif.GetString(s, "note", "")
                         };
-                        dataList.Add(data);
-                        if (data.Note.ToLower().Contains("stock"))
+
+                        if (data.Note != null && data.Note.ToLower().Contains("stock"))
                         {
-                            // Stocks
-                            if (accountDictionary.ContainsKey(data.Symbol))
-                                curStocks += accountDictionary[data.Symbol].curPercent;
+                            if (accountDictionary.ContainsKey(data.Symbol)) curStocks += double.IsNaN(accountDictionary[data.Symbol].curPercent) ? 0.0 : accountDictionary[data.Symbol].curPercent;
                             targetStocks += data.TargetPercent;
                         }
-                        else if (data.Note.ToLower().Contains("bond"))
+                        else if (data.Note != null && data.Note.ToLower().Contains("bond"))
                         {
-                            // Bonds
-                            if (accountDictionary.ContainsKey(data.Symbol))
-                                curBonds += accountDictionary[data.Symbol].curPercent;
+                            if (accountDictionary.ContainsKey(data.Symbol)) curBonds += double.IsNaN(accountDictionary[data.Symbol].curPercent) ? 0.0 : accountDictionary[data.Symbol].curPercent;
                             targetBonds += data.TargetPercent;
                         }
-                        else if (data.Note.ToLower().Contains("cash"))
+                        else if (data.Note != null && data.Note.ToLower().Contains("cash"))
                         {
-                            // Cash
-                            if (accountDictionary.ContainsKey(data.Symbol))
-                                curCash += accountDictionary[data.Symbol].curPercent;
+                            if (accountDictionary.ContainsKey(data.Symbol)) curCash += double.IsNaN(accountDictionary[data.Symbol].curPercent) ? 0.0 : accountDictionary[data.Symbol].curPercent;
                             targetCash += data.TargetPercent;
                         }
-
                     }
+
                     txtStocksT.Text = targetStocks.ToString("F2") + " %";
-                    txtStocksC.Text = curStocks.ToString("F2") + " %";
+                    txtStocksC.Text = (double.IsNaN(curStocks) ? 0.0 : curStocks).ToString("F2") + " %";
                     txtBondsT.Text = targetBonds.ToString("F2") + " %";
-                    txtBondsC.Text = curBonds.ToString("F2") + " %";
+                    txtBondsC.Text = (double.IsNaN(curBonds) ? 0.0 : curBonds).ToString("F2") + " %";
                     txtCashT.Text = targetCash.ToString("F2") + " %";
-                    txtCashC.Text = curCash.ToString("F2") + " %";
-
+                    txtCashC.Text = (double.IsNaN(curCash) ? 0.0 : curCash).ToString("F2") + " %";
                 }
+                catch { }
             }
             catch (Exception ex)
             {
@@ -553,155 +588,10 @@ namespace WinFinanceApp
                 this._logger.SentEvent(ex.ToString(), Logger.EnumLogLevel.EXCEPTION_LEVEL);
             }
         }
-        /*
-        private void LoadDataFromCSV(object sender, EventArgs e)
-        {
-            try
-            {
-                List<KeyValuePair<string, double>> positions = new List<KeyValuePair<string, double>>();
 
-                accountDictionary.Clear();
-                dataGrid.Rows.Clear();
-                TotalCurValue = 0; TotalCurPercent = 0; TotalTargetPercent = 0;
-                this.openFileD.Title = "Load Data from CSV File";
-
-                this.openFileD.CheckFileExists = true;
-                this.openFileD.CheckPathExists = true;
-
-                this.openFileD.DefaultExt = "csv";
-                this.openFileD.Filter = "CSV files (*.csv)|*.csv";
-                this.openFileD.FilterIndex = 1;
-                this.openFileD.RestoreDirectory = false;
-
-                this.openFileD.ReadOnlyChecked = true;
-                this.openFileD.ShowReadOnly = true;
-                if (this.openFileD.ShowDialog() == DialogResult.OK)
-                {
-                    string[] strings = System.IO.File.ReadAllLines(this.openFileD.FileName);
-
-                    // Load target positions from config
-                    for (int i = 0; i < 20; i++)
-                    {
-                        string symbol = this.inif.GetString(i.ToString(), "symbol", "");
-                        if (string.IsNullOrEmpty(symbol) || symbol == "?")
-                            continue;
-                        double targetPct = this.inif.GetDouble(i.ToString(), "%", 0);
-                        positions.Add(new KeyValuePair<string, double>(symbol, targetPct));
-                    }
-
-                    string account = "";
-                    bool foundHeader = false;
-
-                    foreach (string str in strings)
-                    {
-                        // Skip until we find the header row
-                        if (!foundHeader)
-                        {
-                            if (str.Contains("Account Number") || str.Contains("Account Name") || str.Contains("Symbol"))
-                            {
-                                foundHeader = true;
-                            }
-                            continue;
-                        }
-
-                        // Stop parsing if we hit disclaimer text or empty lines
-                        if (IsEndOfDataLine(str))
-                            break;
-
-                        string[] s = SplitCsvLine(str);  // Use proper CSV splitter instead of simple Split(',')
-
-                        // Skip if not enough columns
-                        if (s.Length < 8)
-                            continue;
-
-                        double value = 0, curPercent = 0, targetPercent = 0, valRebalance = 0, deviation = 0;
-                        account = string.Format("{0} #{1}", s[1], s[0]);
-                        string desc = string.Format("{0}", s[3]);
-                        string symbol = s[2];
-
-                        if (s.Contains("Pending Activity"))
-                        {
-                            desc = s[2];
-                            symbol = "N/A";
-                            value = ParseCsvValue(s[7]);
-                            accountDictionary.Add(symbol, new AcountRecord(desc, value, curPercent, targetPercent, valRebalance, deviation));
-                            continue;
-                        }
-
-                        // Parse value from column 7 (Current Value) - note CSV columns are 0-indexed
-                        // Column layout: 0=Account#, 1=Name, 2=Symbol, 3=Description, 4=Qty, 5=Price, 6=PriceChange, 7=CurrentValue
-                        if (s.Length > 7)
-                        {
-                            value = ParseCsvValue(s[7]);
-                        }
-
-                        // Parse percent from column 12 (Percent Of Account) if it exists
-                        if (s.Length > 12)
-                        {
-                            curPercent = ParsePercentageValue(s[12]);
-                            // curPercent is already a percentage number (e.g., 0.23 for 0.23%)
-                            // No need to multiply by 100 since the CSV already has it as percentage
-                        }
-
-                        // Debug output for first symbol to verify parsing
-                        if (symbol == "FMPXX" || symbol == "VWO")
-                        {
-                       //     this._logger.SentEvent($"Debug {symbol}: Raw s[7]='{s[7]}' Parsed value={value} | Raw s[12]='{s[12]}' Parsed curPercent={curPercent}", Logger.EnumLogLevel.WARNING_LEVEL);
-                        }
-
-                        KeyValuePair<string, double> foundPair = positions.FirstOrDefault(pair => pair.Key == symbol);
-                        if (foundPair.Key == null)
-                        {
-                            this._logger.SentEvent(string.Format("position {0} not found in configuration", symbol), Logger.EnumLogLevel.EXCEPTION_LEVEL);
-                        }
-                        else
-                        {
-                            targetPercent = foundPair.Value;
-                        }
-
-                        deviation = Math.Round((curPercent - targetPercent), 3);
-                        TotalTargetPercent += targetPercent;
-                        accountDictionary.Add(symbol, new AcountRecord(desc, value, curPercent, targetPercent, valRebalance, deviation));
-                    }
-
-                    grpBox.Text = string.Format("Account Monitor: {0}                   {1}", account, Path.GetFileName(this.openFileD.FileName));
-                }
-
-                TotalCurValue = Math.Round(accountDictionary.Values.Sum(dp => dp.value),1);
-               // TotalCurPercent = Math.Round(accountDictionary.Values.Sum(dp => dp.curPercent),1);
-                TotalTargetPercent = positions.Sum(pair => pair.Value);
-                this.lblTotalVal.Text = TotalCurValue.ToString();
-                this.lblTotalTarget.Text = TotalTargetPercent.ToString();
-
-                // Perform a rebalance
-                List<string> keysToUpdate = accountDictionary.Keys.ToList();
-                foreach (var key in keysToUpdate)
-                {
-                    AcountRecord recordToUpdate = accountDictionary[key];
-                    recordToUpdate.curPercent = recordToUpdate.value / TotalCurValue * 100;
-                    recordToUpdate.valRebalance = Math.Round((recordToUpdate.targetPercent / 100.00 - recordToUpdate.curPercent / 100) * TotalCurValue, 3);
-
-                    accountDictionary[key] = recordToUpdate;
-                }
-                TotalCurPercent = Math.Round(accountDictionary.Values.Sum(dp => dp.curPercent),1);
-                this.lblTotalCur.Text = TotalCurPercent.ToString();
-                lblTotalRebalance.Text = Math.Round(accountDictionary.Values.Sum(dp => dp.valRebalance), 3).ToString();
-
-                // Populate grid
-                foreach (var kvp in accountDictionary)
-                {
-                    dataGrid.Rows.Add(kvp.Value.desc, kvp.Key, kvp.Value.value, Math.Round(kvp.Value.curPercent, 3), kvp.Value.targetPercent, kvp.Value.valRebalance, kvp Value.deviation);
-                }
-            }
-            catch (Exception ex)
-            {
-                accountDictionary.Clear();
-                this._logger.SentEvent(ex.ToString(), Logger.EnumLogLevel.EXCEPTION_LEVEL);
-            }
-        }
-        */
         private void BtnLoadFile_Click(object sender, EventArgs e)
         {
+            // Ensure inif corresponds to current account selection
             switch (this.MyFinance.Account)
             {
                 case (int)CMyFinance.AccountType.LenaIRA:
@@ -720,6 +610,16 @@ namespace WinFinanceApp
                     inif = new Ini(Properties.Settings.Default.SetupOther);
                     break;
             }
+
+            // Load global threshold setting (defensive)
+            try
+            {
+                var globalIni = new Ini(this._logger.SetupPath);
+                double cfgThreshold = globalIni.GetDouble("Settings", "RebalanceThresholdPercent", this.MyFinance.thresholdTrigger);
+                this.MyFinance.thresholdTrigger = cfgThreshold;
+            }
+            catch { }
+
             LoadDataFromCSV(sender, e);
         }
     }
