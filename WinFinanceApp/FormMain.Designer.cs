@@ -47,6 +47,7 @@ namespace WinFinanceApp
             this.timer_ui = new System.Windows.Forms.Timer(this.components);
             this.BtnReturn = new System.Windows.Forms.Button();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.BtnAcctSpending = new System.Windows.Forms.Button();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
@@ -55,7 +56,7 @@ namespace WinFinanceApp
             // 
             this.BtnSetup.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.BtnSetup.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.BtnSetup.Location = new System.Drawing.Point(4, 318);
+            this.BtnSetup.Location = new System.Drawing.Point(4, 392);
             this.BtnSetup.Name = "BtnSetup";
             this.BtnSetup.Size = new System.Drawing.Size(135, 64);
             this.BtnSetup.TabIndex = 182;
@@ -220,6 +221,18 @@ namespace WinFinanceApp
             this.pictureBox1.TabStop = false;
             this.pictureBox1.Click += new System.EventHandler(this.pictureBox1_Click);
             // 
+            // BtnAcctSpending
+            // 
+            this.BtnAcctSpending.DialogResult = System.Windows.Forms.DialogResult.Cancel;
+            this.BtnAcctSpending.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.BtnAcctSpending.Location = new System.Drawing.Point(4, 319);
+            this.BtnAcctSpending.Name = "BtnAcctSpending";
+            this.BtnAcctSpending.Size = new System.Drawing.Size(135, 64);
+            this.BtnAcctSpending.TabIndex = 182;
+            this.BtnAcctSpending.Text = "Analize Spending";
+            this.BtnAcctSpending.UseVisualStyleBackColor = true;
+            this.BtnAcctSpending.Click += new System.EventHandler(this.BtnAcctSpending_Click);
+            // 
             // FormMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -232,6 +245,7 @@ namespace WinFinanceApp
             this.Controls.Add(this.listView);
             this.Controls.Add(this.menuStrip1);
             this.Controls.Add(this.PANPAN);
+            this.Controls.Add(this.BtnAcctSpending);
             this.Controls.Add(this.BtnSetup);
             this.Controls.Add(this.BtnReturn);
             this.Controls.Add(this.BtnIRA_S);
@@ -268,5 +282,6 @@ namespace WinFinanceApp
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.ToolStripMenuItem historicalRetrunToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem sETUPToolStripMenuItem1;
+        protected System.Windows.Forms.Button BtnAcctSpending;
     }
 }

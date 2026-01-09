@@ -17,31 +17,28 @@ using System.Globalization;
 
 namespace WinFinanceApp
 {
-    public struct AcountRecord
-    {
-        public string desc;
-        public double value;
-        public double curPercent;
-        public double valRebalance;
-        public double targetPercent;
-      //  public double deviation;
-        // NEW: Add fields for simulation results
-        public double simulatedValue;
-        public double simulatedPercent;
+    //public struct AcountRecord
+    //{
+    //    public string desc;
+    //    public double value;
+    //    public double curPercent;
+    //    public double valRebalance;
+    //    public double targetPercent;
+    //  //  public double deviation;
+    //    // NEW: Add fields for simulation results
+    //    public double simulatedValue;
+    //    public double simulatedPercent;
 
-        public AcountRecord(string desc, double value, double curPercent, double targetPercent, double valRebalance) : this()
-        {
-            this.desc = desc;
-            this.value = value;
-            this.curPercent = curPercent;
-            this.targetPercent = targetPercent;
-            this.valRebalance = valRebalance;
-           // this.deviation = deviation;
-            // Initialize new fields
-           // this.simulatedValue = 0.0;
-           // this.simulatedPercent = 0.0;
-        }
-    }
+    //    public AcountRecord(string desc, double value, double curPercent, double targetPercent, double valRebalance) : this()
+    //    {
+    //        this.desc = desc;
+    //        this.value = value;
+    //        this.curPercent = curPercent;
+    //        this.targetPercent = targetPercent;
+    //        this.valRebalance = valRebalance;
+           
+    //    }
+    //}
 
     public partial class FormIRA1 : Form
     {

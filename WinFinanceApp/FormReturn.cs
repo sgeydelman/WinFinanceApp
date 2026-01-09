@@ -11,7 +11,7 @@ using System.Windows.Forms;
 using System.Globalization;
 using System.IO;
 using ScottPlot;
-using System.CodeDom;
+//using System.CodeDom;
 
 namespace WinFinanceApp
 {
@@ -720,7 +720,7 @@ namespace WinFinanceApp
                 this.grpSelect.Visible = hasData;
                 this.grpMonths.Visible = !this.chkAnnualized.Checked & hasData;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // Silent catch for timer tick errors
             }

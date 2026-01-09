@@ -128,6 +128,12 @@
     <Compile Include="FormAcctMonitor.Designer.cs">
       <DependentUpon>FormAcctMonitor.cs</DependentUpon>
     </Compile>
+    <Compile Include="FormAcctSpending.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormAcctSpending.Designer.cs">
+      <DependentUpon>FormAcctSpending.cs</DependentUpon>
+    </Compile>
     <Compile Include="FormIRA1.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -162,6 +168,9 @@
     <EmbeddedResource Include="FormAcctMonitor.resx">
       <DependentUpon>FormAcctMonitor.cs</DependentUpon>
       <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormAcctSpending.resx">
+      <DependentUpon>FormAcctSpending.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="FormIRA1.resx">
       <DependentUpon>FormIRA1.cs</DependentUpon>

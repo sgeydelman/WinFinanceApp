@@ -51,15 +51,17 @@ namespace WinFinanceApp
             description.AppendLine("• Account rebalancing calculations");
             description.AppendLine("• Historical return analysis (Time-Weighted Return)");
             description.AppendLine("• Annualized performance tracking");
+            description.AppendLine("• Account Spending analyzing ");
             description.AppendLine();
             description.AppendLine("Data Import Requirements:");
-            description.AppendLine("Files must be downloaded from the Fidelity website and converted to CSV format before loading into the application.");
+            description.AppendLine("Files (except account spending) must be downloaded from the Fidelity website and converted to CSV format before loading into the application.");
             description.AppendLine();
             description.AppendLine("Supported File Types:");
             description.AppendLine("• Portfolio Positions CSV (for account monitoring and rebalancing)");
             description.AppendLine("• Periodic Returns CSV (for monthly time-weighted returns)");
             description.AppendLine("• Annualized Returns CSV (for period-based performance analysis)");
-            
+            description.AppendLine("• Monthly Account Spending CSV (for monthly account spending analysis)");
+
             return description.ToString();
         }
 

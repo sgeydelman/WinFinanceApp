@@ -9,6 +9,51 @@ using System.Threading.Tasks;
 
 namespace WinFinanceApp
 {
+
+    public struct AcountRecord
+    {
+        public string desc;
+        public double value;
+        public double curPercent;
+        public double valRebalance;
+        public double targetPercent;
+        //  public double deviation;
+        // NEW: Add fields for simulation results
+        public double simulatedValue;
+        public double simulatedPercent;
+
+        public AcountRecord(string desc, double value, double curPercent, double targetPercent, double valRebalance) : this()
+        {
+            this.desc = desc;
+            this.value = value;
+            this.curPercent = curPercent;
+            this.targetPercent = targetPercent;
+            this.valRebalance = valRebalance;
+
+        }
+    }
+
+    public struct  SpendingRecord
+    {
+        public DateTime Date;
+        public double Amount;
+        public double FundAdded;
+        public double DividentsOut;
+        public double DividentsIn;
+        public double WithdrawVal;
+        public double MonthlySpending;
+        public SpendingRecord(DateTime date, double amount, double fundAdded, double dividentsOut, double dividentsIn, double withdrawVal, double monthlySpending) : this()
+        {
+            this.Date = date;
+            this.Amount = amount;
+            this.FundAdded = fundAdded;
+            this.DividentsOut = dividentsOut;
+            this.DividentsIn = dividentsIn;
+            this.WithdrawVal = withdrawVal;
+            this.MonthlySpending = monthlySpending;
+        }
+
+    }
     public class CMyFinance
     {
         public Logger _logger;
