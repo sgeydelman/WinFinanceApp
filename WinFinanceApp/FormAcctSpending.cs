@@ -162,6 +162,17 @@ namespace WinFinanceApp
                 scatter.MarkerLineWidth = 2;
                 scatter.LegendText = "Monthly Spending";
 
+                // --- 2b. ADD TOTAL DIVIDENDS LINE ---
+                // Calculate the sum for each point
+                double[] totalDividends = SpendingList.Select(r => r.DividentsIn + r.DividentsOut).ToArray();
+
+                // Add the second scatter plot
+                var divScatter = fPlot.Plot.Add.Scatter(dates, totalDividends);
+                divScatter.LineWidth = 2;
+                divScatter.Color = ScottPlot.Colors.Purple;
+                divScatter.MarkerSize = 0; // Hide dots on this line to keep it clean
+                divScatter.LegendText = "Total Dividends (In+Out)";
+
                 // --- 3. ADD DYNAMIC HORIZONTAL LINES ---
                 var lineYTD = fPlot.Plot.Add.HorizontalLine(avgYTD);
                 lineYTD.LegendText = $"{curYear} YTD Avg: {avgYTD:C0}";
@@ -213,6 +224,8 @@ namespace WinFinanceApp
 
                 MyHoverText.IsVisible = false;
 
+                
+                
                 // --- 6. FINALIZE ---
                 fPlot.Plot.Axes.AutoScale();
 
@@ -233,35 +246,45 @@ namespace WinFinanceApp
         // At the top of your class
         private ScottPlot.Coordinates LastSnappedCoord;
 
+       
         private void fPlot_MouseMove(object sender, MouseEventArgs e)
         {
             if (MyCrosshair == null || scatter == null || MyHoverText == null) return;
 
-            // 1. Get coordinates from the last successful render
             ScottPlot.Pixel mousePixel = new ScottPlot.Pixel(e.X, e.Y);
             ScottPlot.Coordinates mouseCoords = fPlot.Plot.GetCoordinates(mousePixel);
-
-            // 2. Find the nearest point
             var nearest = scatter.Data.GetNearest(mouseCoords, fPlot.Plot.LastRender);
 
             if (nearest.IsReal)
             {
-                // 3. ONLY proceed if the mouse has moved to a DIFFERENT data point
-                if (nearest.Coordinates.X != LastSnappedCoord.X)
+                // Only refresh if we move to a NEW point
+                if (Math.Abs(nearest.Coordinates.X - LastSnappedCoord.X) > 1e-6)
                 {
                     LastSnappedCoord = nearest.Coordinates;
 
-                    // Update positions without refreshing yet
-                    MyCrosshair.Position = nearest.Coordinates;
-                    MyHoverText.Location = nearest.Coordinates;
+                    // FIX: Find the record. Since it's a struct, we check if we actually found one.
+                    var foundRecords = SpendingList.Where(r => Math.Abs(r.Date.ToOADate() - nearest.Coordinates.X) < 0.01);
 
                     DateTime pointDate = DateTime.FromOADate(nearest.Coordinates.X);
-                    MyHoverText.LabelText = $"{pointDate:MMM, yyyy}{Environment.NewLine}{nearest.Coordinates.Y:C2}";
+                    string tooltip = $"{pointDate:MMM, yyyy}{Environment.NewLine}Spent: {nearest.Coordinates.Y:C2}";
+
+                    if (foundRecords.Any())
+                    {
+                        var record = foundRecords.First();
+
+                        // Now comparing double to 0 is perfectly valid
+                        if (record.DividentsOut != 0)
+                            tooltip += $"{Environment.NewLine}Div: {(record.DividentsOut + record.DividentsIn):C2}";
+
+                        if (record.WithdrawVal != 0)
+                            tooltip += $"{Environment.NewLine}Withd: {record.WithdrawVal:C2}";
+                    }
+
+                    MyCrosshair.Position = nearest.Coordinates;
+                    MyHoverText.Location = nearest.Coordinates;
+                    MyHoverText.LabelText = tooltip;
                     MyHoverText.IsVisible = true;
 
-                    // 4. USE INVALIDATE INSTEAD OF REFRESH
-                    // Refresh() forces an instant redraw (slow). 
-                    // Invalidate() tells Windows to redraw when it has a free millisecond (smooth).
                     fPlot.Invalidate();
                 }
             }
@@ -271,7 +294,6 @@ namespace WinFinanceApp
                 fPlot.Invalidate();
             }
         }
-
         private void BtnUpdate_Click(object sender, EventArgs e)
         {
             try 
