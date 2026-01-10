@@ -40,6 +40,8 @@ namespace WinFinanceApp
             this._logger = Logger.Instance;
             inif = new Ini(_logger.SetupPath);
             this.MyFinance = CMyFinance.Instance;
+            fPlot.MouseDown += fPlot_MouseDown;
+            fPlot.MouseUp += fPlot_MouseUp;
             //this.LoadSpendingCSV();
             // Initial layout adjustment
             AdjustLayout();
@@ -65,8 +67,10 @@ namespace WinFinanceApp
                 //split each line in Lines
                 foreach (var line in lines)
                 {
+                    if (string.IsNullOrWhiteSpace(line)) continue; // Skip empty lines
                     var columns = line.Split(',');
                     string[] formats = { "MM/dd/yyyy", "M/d/yyyy", "MM/d/yyyy", "M/dd/yyyy" };
+                    if (columns.Length < 6) continue; // Skip lines that don't have all data points
                     //add to SpendingList a new SpendingRecord with consecutive columns as Date, ammount , fundAdded, dividcentsIn,dividentsOut ,withdrawVal
                     SpendingList.Add(new SpendingRecord
                     {
@@ -120,7 +124,128 @@ namespace WinFinanceApp
                 fPlot.Refresh();
             }
         }
-        
+
+        //private void BtnPlot_Click(object sender, EventArgs e)
+        //{
+        //    try
+        //    {
+        //        LoadSpendingCSV();
+        //        if (SpendingList == null || SpendingList.Count == 0) return;
+
+        //        // --- 1. DYNAMIC YEAR CALCULATIONS ---
+        //        int curYear = DateTime.Now.Year;
+        //        int prevYear = curYear - 1;
+        //        int prevPrevYear = curYear - 2;
+
+        //        double avgYTD = SpendingList.Where(r => r.Date.Year == curYear)
+        //                                    .Select(r => (double)r.MonthlySpending)
+        //                                    .DefaultIfEmpty(0).Average();
+
+        //        double avgPrev = SpendingList.Where(r => r.Date.Year == prevYear)
+        //                                     .Select(r => (double)r.MonthlySpending)
+        //                                     .DefaultIfEmpty(0).Average();
+
+        //        double avgPrevPrev = SpendingList.Where(r => r.Date.Year == prevPrevYear)
+        //                                         .Select(r => (double)r.MonthlySpending)
+        //                                         .DefaultIfEmpty(0).Average();
+
+        //        // --- 2. PREPARE PLOT ---
+        //        fPlot.Plot.Clear();
+
+        //        double[] dates = SpendingList.Select(r => r.Date.ToOADate()).ToArray();
+        //        double[] monthlySpending = SpendingList.Select(r => (double)r.MonthlySpending).ToArray();
+
+        //        // Add Scatter
+        //        scatter = fPlot.Plot.Add.Scatter(dates, monthlySpending);
+        //        scatter.LineWidth = 3;
+        //        scatter.Color = ScottPlot.Colors.Blue;
+        //        scatter.MarkerSize = 12; // Adjusted dot size
+        //        scatter.MarkerShape = ScottPlot.MarkerShape.FilledCircle;
+        //        scatter.MarkerFillColor = ScottPlot.Colors.Red;
+        //        scatter.MarkerLineColor = ScottPlot.Colors.Blue;
+        //        scatter.MarkerLineWidth = 2;
+        //        scatter.LegendText = "Monthly Spending";
+
+        //        // --- 2b. ADD TOTAL DIVIDENDS LINE ---
+        //        // Calculate the sum for each point
+        //        double[] totalDividends = SpendingList.Select(r => r.DividentsIn + r.DividentsOut).ToArray();
+
+        //        // Add the second scatter plot
+        //        var divScatter = fPlot.Plot.Add.Scatter(dates, totalDividends);
+        //        divScatter.LineWidth = 2;
+        //        divScatter.Color = ScottPlot.Colors.Purple;
+        //        divScatter.MarkerSize = 0; // Hide dots on this line to keep it clean
+        //        divScatter.LegendText = "Total Dividends (In+Out)";
+
+        //        // --- 3. ADD DYNAMIC HORIZONTAL LINES ---
+        //        var lineYTD = fPlot.Plot.Add.HorizontalLine(avgYTD);
+        //        lineYTD.LegendText = $"{curYear} YTD Avg: {avgYTD:C0}";
+        //        lineYTD.LineColor = ScottPlot.Colors.SlateGray;
+        //        lineYTD.LineWidth = 2;
+
+        //        var linePrev = fPlot.Plot.Add.HorizontalLine(avgPrev);
+        //        linePrev.LegendText = $"{prevYear} Avg: {avgPrev:C0}";
+        //        linePrev.LineColor = ScottPlot.Colors.Green;
+        //        linePrev.LinePattern = ScottPlot.LinePattern.Dashed;
+
+        //        var linePrevPrev = fPlot.Plot.Add.HorizontalLine(avgPrevPrev);
+        //        linePrevPrev.LegendText = $"{prevPrevYear} Avg: {avgPrevPrev:C0}";
+        //        linePrevPrev.LineColor = ScottPlot.Colors.Orange;
+        //        linePrevPrev.LinePattern = ScottPlot.LinePattern.Dotted;
+
+        //        // --- 4. AXIS SETUP ---
+        //        var monthUnit = new ScottPlot.TickGenerators.TimeUnits.Month();
+        //        var dtGen = new ScottPlot.TickGenerators.DateTimeFixedInterval(monthUnit, 1);
+        //        dtGen.LabelFormatter = (DateTime dt) => dt.ToString("MM/yy");
+        //        fPlot.Plot.Axes.Bottom.TickGenerator = dtGen;
+        //        fPlot.Plot.Axes.Bottom.TickLabelStyle.Rotation = -45;
+
+        //        // Performance & Aesthetics
+        //        fPlot.Plot.FigureBackground.Color = ScottPlot.Colors.White;
+        //        fPlot.Plot.Axes.ContinuouslyAutoscale = false;
+
+        //        var yGen = new ScottPlot.TickGenerators.NumericAutomatic();
+        //        yGen.LabelFormatter = (double val) => val.ToString("C0");
+        //        fPlot.Plot.Axes.Left.TickGenerator = yGen;
+
+        //        // --- 5. INTERACTION & FONT STYLING ---
+        //        MyCrosshair = fPlot.Plot.Add.Crosshair(0, 0);
+        //        MyCrosshair.LineColor = ScottPlot.Colors.Red;
+
+        //        // NEW: Styled Hover Text for High Visibility
+        //        MyHoverText = fPlot.Plot.Add.Text("", dates[0], monthlySpending[0]);
+        //        MyHoverText.LabelFontSize = 14;              // Larger text
+        //        MyHoverText.LabelBold = true;                // Bold for visibility
+        //        MyHoverText.LabelFontName = "Verdana";       // Clear font
+        //        MyHoverText.LabelFontColor = ScottPlot.Colors.Black;
+        //        MyHoverText.LabelBackgroundColor = ScottPlot.Colors.Yellow; // High contrast
+        //        MyHoverText.LabelBorderColor = ScottPlot.Colors.Black;
+        //        MyHoverText.LabelBorderWidth = 2;
+        //        MyHoverText.LabelPadding = 8;
+
+        //        // Offset it so it doesn't cover the dot
+        //        MyHoverText.LabelAlignment = ScottPlot.Alignment.LowerCenter;
+
+        //        MyHoverText.IsVisible = false;
+
+
+
+        //        // --- 6. FINALIZE ---
+        //        fPlot.Plot.Axes.AutoScale();
+
+        //        // Increase top margin to 15% so the large Hover Box doesn't get cut off
+        //        var limits = fPlot.Plot.Axes.GetLimits();
+        //        fPlot.Plot.Axes.SetLimitsY(0, limits.Top * 1.15);
+
+        //        fPlot.Plot.ShowLegend(ScottPlot.Alignment.UpperRight);
+        //        fPlot.Refresh();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger?.SentEvent("Plotting Error: " + ex.Message, Logger.EnumLogLevel.ERROR_LEVEL);
+        //    }
+        //}
+
         private void BtnPlot_Click(object sender, EventArgs e)
         {
             try
@@ -134,46 +259,45 @@ namespace WinFinanceApp
                 int prevPrevYear = curYear - 2;
 
                 double avgYTD = SpendingList.Where(r => r.Date.Year == curYear)
-                                            .Select(r => (double)r.MonthlySpending)
+                                            .Select(r => r.MonthlySpending)
                                             .DefaultIfEmpty(0).Average();
 
                 double avgPrev = SpendingList.Where(r => r.Date.Year == prevYear)
-                                             .Select(r => (double)r.MonthlySpending)
+                                             .Select(r => r.MonthlySpending)
                                              .DefaultIfEmpty(0).Average();
 
                 double avgPrevPrev = SpendingList.Where(r => r.Date.Year == prevPrevYear)
-                                                 .Select(r => (double)r.MonthlySpending)
+                                                 .Select(r => r.MonthlySpending)
                                                  .DefaultIfEmpty(0).Average();
 
                 // --- 2. PREPARE PLOT ---
                 fPlot.Plot.Clear();
 
                 double[] dates = SpendingList.Select(r => r.Date.ToOADate()).ToArray();
-                double[] monthlySpending = SpendingList.Select(r => (double)r.MonthlySpending).ToArray();
+                double[] monthlySpending = SpendingList.Select(r => r.MonthlySpending).ToArray();
+                double[] totalDividends = SpendingList.Select(r => r.DividentsIn + r.DividentsOut).ToArray();
 
-                // Add Scatter
+                // Main Spending Line
                 scatter = fPlot.Plot.Add.Scatter(dates, monthlySpending);
                 scatter.LineWidth = 3;
                 scatter.Color = ScottPlot.Colors.Blue;
-                scatter.MarkerSize = 12; // Adjusted dot size
-                scatter.MarkerShape = ScottPlot.MarkerShape.FilledCircle;
+                // scatter.MarkerSize = 12;
+                // scatter.MarkerShape = ScottPlot.MarkerShape.FilledCircle;
+                scatter.MarkerSize = 15;
+                scatter.MarkerShape = ScottPlot.MarkerShape.OpenCircle; // Makes them look like targets
+                scatter.MarkerLineWidth = 2;
                 scatter.MarkerFillColor = ScottPlot.Colors.Red;
                 scatter.MarkerLineColor = ScottPlot.Colors.Blue;
-                scatter.MarkerLineWidth = 2;
                 scatter.LegendText = "Monthly Spending";
 
-                // --- 2b. ADD TOTAL DIVIDENDS LINE ---
-                // Calculate the sum for each point
-                double[] totalDividends = SpendingList.Select(r => r.DividentsIn + r.DividentsOut).ToArray();
-
-                // Add the second scatter plot
+                // New Dividend Line (In + Out)
                 var divScatter = fPlot.Plot.Add.Scatter(dates, totalDividends);
                 divScatter.LineWidth = 2;
                 divScatter.Color = ScottPlot.Colors.Purple;
-                divScatter.MarkerSize = 0; // Hide dots on this line to keep it clean
+                divScatter.MarkerSize = 0; // Clean line without dots
                 divScatter.LegendText = "Total Dividends (In+Out)";
 
-                // --- 3. ADD DYNAMIC HORIZONTAL LINES ---
+                // --- 3. DYNAMIC HORIZONTAL AVERAGE LINES ---
                 var lineYTD = fPlot.Plot.Add.HorizontalLine(avgYTD);
                 lineYTD.LegendText = $"{curYear} YTD Avg: {avgYTD:C0}";
                 lineYTD.LineColor = ScottPlot.Colors.SlateGray;
@@ -196,42 +320,36 @@ namespace WinFinanceApp
                 fPlot.Plot.Axes.Bottom.TickGenerator = dtGen;
                 fPlot.Plot.Axes.Bottom.TickLabelStyle.Rotation = -45;
 
-                // Performance & Aesthetics
-                fPlot.Plot.FigureBackground.Color = ScottPlot.Colors.White;
-                fPlot.Plot.Axes.ContinuouslyAutoscale = false;
-
+                // Y-Axis Currency Formatting
                 var yGen = new ScottPlot.TickGenerators.NumericAutomatic();
                 yGen.LabelFormatter = (double val) => val.ToString("C0");
                 fPlot.Plot.Axes.Left.TickGenerator = yGen;
 
-                // --- 5. INTERACTION & FONT STYLING ---
-                MyCrosshair = fPlot.Plot.Add.Crosshair(0, 0);
-                MyCrosshair.LineColor = ScottPlot.Colors.Red;
+                // Performance Settings
+                fPlot.Plot.FigureBackground.Color = ScottPlot.Colors.White;
+                fPlot.Plot.Axes.ContinuouslyAutoscale = false;
 
-                // NEW: Styled Hover Text for High Visibility
-                MyHoverText = fPlot.Plot.Add.Text("", dates[0], monthlySpending[0]);
-                MyHoverText.LabelFontSize = 14;              // Larger text
-                MyHoverText.LabelBold = true;                // Bold for visibility
-                MyHoverText.LabelFontName = "Verdana";       // Clear font
+                // --- 5. INTERACTION & TOOLTIP SETUP ---
+                // Note: MyCrosshair is removed to avoid confusion and lag
+
+                MyHoverText = fPlot.Plot.Add.Text("", 0, 0);
+                MyHoverText.LabelFontSize = 14;
+                MyHoverText.LabelBold = true;
+                MyHoverText.LabelFontName = "Verdana";
                 MyHoverText.LabelFontColor = ScottPlot.Colors.Black;
-                MyHoverText.LabelBackgroundColor = ScottPlot.Colors.Yellow; // High contrast
+                MyHoverText.LabelBackgroundColor = ScottPlot.Colors.Yellow;
                 MyHoverText.LabelBorderColor = ScottPlot.Colors.Black;
                 MyHoverText.LabelBorderWidth = 2;
                 MyHoverText.LabelPadding = 8;
-
-                // Offset it so it doesn't cover the dot
                 MyHoverText.LabelAlignment = ScottPlot.Alignment.LowerCenter;
-
                 MyHoverText.IsVisible = false;
 
-                
-                
                 // --- 6. FINALIZE ---
                 fPlot.Plot.Axes.AutoScale();
 
-                // Increase top margin to 15% so the large Hover Box doesn't get cut off
+                // Ensure 25% margin at top so the tall multi-line tooltip has room
                 var limits = fPlot.Plot.Axes.GetLimits();
-                fPlot.Plot.Axes.SetLimitsY(0, limits.Top * 1.15);
+                fPlot.Plot.Axes.SetLimitsY(0, limits.Top * 1.25);
 
                 fPlot.Plot.ShowLegend(ScottPlot.Alignment.UpperRight);
                 fPlot.Refresh();
@@ -241,58 +359,13 @@ namespace WinFinanceApp
                 _logger?.SentEvent("Plotting Error: " + ex.Message, Logger.EnumLogLevel.ERROR_LEVEL);
             }
         }
-
-       
         // At the top of your class
         private ScottPlot.Coordinates LastSnappedCoord;
 
        
         private void fPlot_MouseMove(object sender, MouseEventArgs e)
         {
-            if (MyCrosshair == null || scatter == null || MyHoverText == null) return;
 
-            ScottPlot.Pixel mousePixel = new ScottPlot.Pixel(e.X, e.Y);
-            ScottPlot.Coordinates mouseCoords = fPlot.Plot.GetCoordinates(mousePixel);
-            var nearest = scatter.Data.GetNearest(mouseCoords, fPlot.Plot.LastRender);
-
-            if (nearest.IsReal)
-            {
-                // Only refresh if we move to a NEW point
-                if (Math.Abs(nearest.Coordinates.X - LastSnappedCoord.X) > 1e-6)
-                {
-                    LastSnappedCoord = nearest.Coordinates;
-
-                    // FIX: Find the record. Since it's a struct, we check if we actually found one.
-                    var foundRecords = SpendingList.Where(r => Math.Abs(r.Date.ToOADate() - nearest.Coordinates.X) < 0.01);
-
-                    DateTime pointDate = DateTime.FromOADate(nearest.Coordinates.X);
-                    string tooltip = $"{pointDate:MMM, yyyy}{Environment.NewLine}Spent: {nearest.Coordinates.Y:C2}";
-
-                    if (foundRecords.Any())
-                    {
-                        var record = foundRecords.First();
-
-                        // Now comparing double to 0 is perfectly valid
-                        if (record.DividentsOut != 0)
-                            tooltip += $"{Environment.NewLine}Div: {(record.DividentsOut + record.DividentsIn):C2}";
-
-                        if (record.WithdrawVal != 0)
-                            tooltip += $"{Environment.NewLine}Withd: {record.WithdrawVal:C2}";
-                    }
-
-                    MyCrosshair.Position = nearest.Coordinates;
-                    MyHoverText.Location = nearest.Coordinates;
-                    MyHoverText.LabelText = tooltip;
-                    MyHoverText.IsVisible = true;
-
-                    fPlot.Invalidate();
-                }
-            }
-            else if (MyHoverText.IsVisible)
-            {
-                MyHoverText.IsVisible = false;
-                fPlot.Invalidate();
-            }
         }
         private void BtnUpdate_Click(object sender, EventArgs e)
         {
@@ -320,5 +393,63 @@ namespace WinFinanceApp
             
 
         }
-    }
-}
+        private void fPlot_MouseDown(object sender, MouseEventArgs e)
+        {
+            // 1. Determine where the user clicked
+            ScottPlot.Pixel mousePixel = new ScottPlot.Pixel(e.X, e.Y);
+            ScottPlot.Coordinates mouseCoords = fPlot.Plot.GetCoordinates(mousePixel);
+
+            // 2. Find the nearest data point on the Spending Line
+            var nearest = scatter.Data.GetNearest(mouseCoords, fPlot.Plot.LastRender);
+
+            if (nearest.IsReal)
+            {
+                // 3. Find the matching record in your list
+                var foundRecords = SpendingList.Where(r => Math.Abs(r.Date.ToOADate() - nearest.Coordinates.X) < 0.01);
+
+                if (foundRecords.Any())
+                {
+                    var record = foundRecords.First();
+
+                    // 4. Build the dynamic tooltip
+                    DateTime ptDate = DateTime.FromOADate(nearest.Coordinates.X);
+                    string txt = $"{ptDate:MMM, yyyy}{Environment.NewLine}";
+                    txt += $"Spent: {record.MonthlySpending:C2}{Environment.NewLine}";
+
+                    double totalDiv = record.DividentsIn + record.DividentsOut;
+                    if (totalDiv != 0) txt += $"Total Div: {totalDiv:C2}{Environment.NewLine}";
+                    if (record.WithdrawVal != 0) txt += $"Withd: {record.WithdrawVal:C2}";
+
+                    // 5. Dynamic Coloring based on Goal (e.g., $4000)
+                    double spendingGoal = 4000;
+                    if (record.MonthlySpending > spendingGoal)
+                    {
+                        MyHoverText.LabelBackgroundColor = ScottPlot.Colors.Salmon;
+                        MyHoverText.LabelFontColor = ScottPlot.Colors.White;
+                    }
+                    else
+                    {
+                        MyHoverText.LabelBackgroundColor = ScottPlot.Colors.Yellow; // Default visibility color
+                        MyHoverText.LabelFontColor = ScottPlot.Colors.Black;
+                    }
+
+                    // 6. Update and Show the Label
+                    MyHoverText.Location = nearest.Coordinates;
+                    MyHoverText.LabelText = txt.TrimEnd();
+                    MyHoverText.IsVisible = true;
+
+                    fPlot.Refresh();
+                }
+            }
+        }
+
+        private void fPlot_MouseUp(object sender, MouseEventArgs e)
+        {
+            if (MyHoverText != null && MyHoverText.IsVisible)
+            {
+                MyHoverText.IsVisible = false;
+                fPlot.Refresh();
+            }
+        }
+    } // End of Class
+} // End of Namespace

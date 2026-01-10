@@ -32,25 +32,25 @@
             this.fPlot = new ScottPlot.WinForms.FormsPlot();
             this.BtnPlot = new System.Windows.Forms.Button();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.numAmount = new System.Windows.Forms.NumericUpDown();
-            this.numFundAdded = new System.Windows.Forms.NumericUpDown();
-            this.numDividentsOut = new System.Windows.Forms.NumericUpDown();
-            this.numDividentsIn = new System.Windows.Forms.NumericUpDown();
-            this.label1 = new System.Windows.Forms.Label();
-            this.label2 = new System.Windows.Forms.Label();
-            this.label3 = new System.Windows.Forms.Label();
-            this.label4 = new System.Windows.Forms.Label();
             this.BtnUpdate = new System.Windows.Forms.Button();
-            this.numWithdrawVal = new System.Windows.Forms.NumericUpDown();
             this.label5 = new System.Windows.Forms.Label();
+            this.label4 = new System.Windows.Forms.Label();
+            this.label3 = new System.Windows.Forms.Label();
+            this.label2 = new System.Windows.Forms.Label();
+            this.label1 = new System.Windows.Forms.Label();
+            this.numWithdrawVal = new System.Windows.Forms.NumericUpDown();
+            this.numDividentsIn = new System.Windows.Forms.NumericUpDown();
+            this.numDividentsOut = new System.Windows.Forms.NumericUpDown();
+            this.numFundAdded = new System.Windows.Forms.NumericUpDown();
+            this.numAmount = new System.Windows.Forms.NumericUpDown();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numAmount)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numFundAdded)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numDividentsOut)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numDividentsIn)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numWithdrawVal)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numDividentsIn)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numDividentsOut)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numFundAdded)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numAmount)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -75,7 +75,8 @@
             this.fPlot.Name = "fPlot";
             this.fPlot.Size = new System.Drawing.Size(1298, 551);
             this.fPlot.TabIndex = 0;
-            this.fPlot.MouseMove += new System.Windows.Forms.MouseEventHandler(this.fPlot_MouseMove);
+            this.fPlot.MouseDown += new System.Windows.Forms.MouseEventHandler(this.fPlot_MouseDown);
+            this.fPlot.MouseUp += new System.Windows.Forms.MouseEventHandler(this.fPlot_MouseUp);
             // 
             // BtnPlot
             // 
@@ -109,88 +110,24 @@
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Add a new record for the month";
             // 
-            // numAmount
+            // BtnUpdate
             // 
-            this.numAmount.DecimalPlaces = 1;
-            this.numAmount.Location = new System.Drawing.Point(10, 58);
-            this.numAmount.Maximum = new decimal(new int[] {
-            1000000,
-            0,
-            0,
-            0});
-            this.numAmount.Name = "numAmount";
-            this.numAmount.Size = new System.Drawing.Size(67, 20);
-            this.numAmount.TabIndex = 0;
-            this.numAmount.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.BtnUpdate.Location = new System.Drawing.Point(6, 293);
+            this.BtnUpdate.Name = "BtnUpdate";
+            this.BtnUpdate.Size = new System.Drawing.Size(75, 23);
+            this.BtnUpdate.TabIndex = 2;
+            this.BtnUpdate.Text = "Record";
+            this.BtnUpdate.UseVisualStyleBackColor = true;
+            this.BtnUpdate.Click += new System.EventHandler(this.BtnUpdate_Click);
             // 
-            // numFundAdded
+            // label5
             // 
-            this.numFundAdded.DecimalPlaces = 1;
-            this.numFundAdded.Location = new System.Drawing.Point(10, 95);
-            this.numFundAdded.Maximum = new decimal(new int[] {
-            1000000,
-            0,
-            0,
-            0});
-            this.numFundAdded.Name = "numFundAdded";
-            this.numFundAdded.Size = new System.Drawing.Size(67, 20);
-            this.numFundAdded.TabIndex = 0;
-            this.numFundAdded.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            // 
-            // numDividentsOut
-            // 
-            this.numDividentsOut.DecimalPlaces = 1;
-            this.numDividentsOut.Location = new System.Drawing.Point(10, 148);
-            this.numDividentsOut.Maximum = new decimal(new int[] {
-            1000000,
-            0,
-            0,
-            0});
-            this.numDividentsOut.Name = "numDividentsOut";
-            this.numDividentsOut.Size = new System.Drawing.Size(67, 20);
-            this.numDividentsOut.TabIndex = 0;
-            this.numDividentsOut.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            // 
-            // numDividentsIn
-            // 
-            this.numDividentsIn.DecimalPlaces = 1;
-            this.numDividentsIn.Location = new System.Drawing.Point(10, 205);
-            this.numDividentsIn.Maximum = new decimal(new int[] {
-            1000000,
-            0,
-            0,
-            0});
-            this.numDividentsIn.Name = "numDividentsIn";
-            this.numDividentsIn.Size = new System.Drawing.Size(67, 20);
-            this.numDividentsIn.TabIndex = 0;
-            this.numDividentsIn.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(10, 39);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(36, 13);
-            this.label1.TabIndex = 1;
-            this.label1.Text = "$ left";
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(10, 79);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(57, 13);
-            this.label2.TabIndex = 1;
-            this.label2.Text = "$ added ";
-            // 
-            // label3
-            // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(10, 118);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(64, 26);
-            this.label3.TabIndex = 1;
-            this.label3.Text = "Dividents \r\nOut $";
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(10, 246);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(78, 13);
+            this.label5.TabIndex = 1;
+            this.label5.Text = "WithdrawVal";
             // 
             // label4
             // 
@@ -201,15 +138,32 @@
             this.label4.TabIndex = 1;
             this.label4.Text = "Dividents\r\nIn $";
             // 
-            // BtnUpdate
+            // label3
             // 
-            this.BtnUpdate.Location = new System.Drawing.Point(6, 293);
-            this.BtnUpdate.Name = "BtnUpdate";
-            this.BtnUpdate.Size = new System.Drawing.Size(75, 23);
-            this.BtnUpdate.TabIndex = 2;
-            this.BtnUpdate.Text = "Record";
-            this.BtnUpdate.UseVisualStyleBackColor = true;
-            this.BtnUpdate.Click += new System.EventHandler(this.BtnUpdate_Click);
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(10, 118);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(64, 26);
+            this.label3.TabIndex = 1;
+            this.label3.Text = "Dividents \r\nOut $";
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(10, 79);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(57, 13);
+            this.label2.TabIndex = 1;
+            this.label2.Text = "$ added ";
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(10, 39);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(36, 13);
+            this.label1.TabIndex = 1;
+            this.label1.Text = "$ left";
             // 
             // numWithdrawVal
             // 
@@ -225,14 +179,61 @@
             this.numWithdrawVal.TabIndex = 0;
             this.numWithdrawVal.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
-            // label5
+            // numDividentsIn
             // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(10, 246);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(78, 13);
-            this.label5.TabIndex = 1;
-            this.label5.Text = "WithdrawVal";
+            this.numDividentsIn.DecimalPlaces = 1;
+            this.numDividentsIn.Location = new System.Drawing.Point(10, 205);
+            this.numDividentsIn.Maximum = new decimal(new int[] {
+            1000000,
+            0,
+            0,
+            0});
+            this.numDividentsIn.Name = "numDividentsIn";
+            this.numDividentsIn.Size = new System.Drawing.Size(67, 20);
+            this.numDividentsIn.TabIndex = 0;
+            this.numDividentsIn.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            // 
+            // numDividentsOut
+            // 
+            this.numDividentsOut.DecimalPlaces = 1;
+            this.numDividentsOut.Location = new System.Drawing.Point(10, 148);
+            this.numDividentsOut.Maximum = new decimal(new int[] {
+            1000000,
+            0,
+            0,
+            0});
+            this.numDividentsOut.Name = "numDividentsOut";
+            this.numDividentsOut.Size = new System.Drawing.Size(67, 20);
+            this.numDividentsOut.TabIndex = 0;
+            this.numDividentsOut.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            // 
+            // numFundAdded
+            // 
+            this.numFundAdded.DecimalPlaces = 1;
+            this.numFundAdded.Location = new System.Drawing.Point(10, 95);
+            this.numFundAdded.Maximum = new decimal(new int[] {
+            1000000,
+            0,
+            0,
+            0});
+            this.numFundAdded.Name = "numFundAdded";
+            this.numFundAdded.Size = new System.Drawing.Size(67, 20);
+            this.numFundAdded.TabIndex = 0;
+            this.numFundAdded.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            // 
+            // numAmount
+            // 
+            this.numAmount.DecimalPlaces = 1;
+            this.numAmount.Location = new System.Drawing.Point(10, 58);
+            this.numAmount.Maximum = new decimal(new int[] {
+            1000000,
+            0,
+            0,
+            0});
+            this.numAmount.Name = "numAmount";
+            this.numAmount.Size = new System.Drawing.Size(67, 20);
+            this.numAmount.TabIndex = 0;
+            this.numAmount.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
             // pictureBox1
             // 
@@ -262,11 +263,11 @@
             this.groupBox1.ResumeLayout(false);
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numAmount)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numFundAdded)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numDividentsOut)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numDividentsIn)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numWithdrawVal)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numDividentsIn)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numDividentsOut)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numFundAdded)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numAmount)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
 
