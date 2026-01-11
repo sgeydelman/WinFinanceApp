@@ -653,7 +653,8 @@ namespace WinFinanceApp
             double totalSpent = calcRecords.Sum(r => r.MonthlySpending);
             double totalAdded = visibleRecords.Sum(r => r.FundAdded);
             double totalWithdrawn = Math.Abs(visibleRecords.Sum(r => r.WithdrawVal));
-
+            double totalDividends = visibleRecords.Sum(r => r.DividentsIn + r.DividentsOut);
+            double avgDividends = calcRecords.Any() ? totalDividends / calcRecords.Count : 0;
             double avgMonthly = calcRecords.Any() ? totalSpent / calcRecords.Count : 0;
 
             // 4. Calculate Duration (Years and Months)
@@ -673,7 +674,9 @@ namespace WinFinanceApp
             sb.AppendLine($"Total Spending:    {totalSpent:C2}");
             sb.AppendLine($"Avg Monthly:       {avgMonthly:C2}");
             sb.AppendLine($"Total Funds Added: {totalAdded:C2}");
-            sb.AppendLine($"Extra Withdrawals (Taxes): {totalWithdrawn:C2}");
+            sb.AppendLine($"Total Dividends:   {totalDividends:C2}");
+            sb.AppendLine($" Avg Dividends:    {avgDividends:C2}");
+            sb.AppendLine($" Total Extra Withdrawals (Taxes): {totalWithdrawn:C2}");
             sb.AppendLine(new string('-', 40));
             sb.AppendLine($"Duration: {durationStr.Trim()}");
             sb.AppendLine($"Data Points: {totalCount} months");
