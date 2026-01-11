@@ -40,14 +40,39 @@ namespace WinFinanceApp
             this._logger = Logger.Instance;
             inif = new Ini(_logger.SetupPath);
             this.MyFinance = CMyFinance.Instance;
+
             fPlot.MouseDown += fPlot_MouseDown;
             fPlot.MouseUp += fPlot_MouseUp;
-            //this.LoadSpendingCSV();
-            // Initial layout adjustment
+
+            if (BtnPlot.Image != null)
+            {
+                // 1. FORCE THE SIZE: Use a small fixed size (24x24).
+                // If we use BtnPlot.Width, the icon becomes a background and causes overlap.
+                System.Drawing.Image smallIcon = ResizeButtonIcon(BtnPlot.Image, 24, 24);
+
+                // 2. TRANSPARENCY: 0.2f makes it a very subtle watermark.
+                BtnPlot.Image = MakeImageTransparent(smallIcon, 0.99f);
+
+                // 3. THE ALIGNMENT COMBO:
+                // This is the most stable configuration for WinForms buttons:
+                BtnPlot.TextImageRelation = TextImageRelation.ImageBeforeText;
+                BtnPlot.ImageAlign = ContentAlignment.MiddleLeft;
+                BtnPlot.TextAlign = ContentAlignment.MiddleCenter;
+
+                // 4. THE GAP:
+                // Pushing the text 10 pixels to the right to ensure it never touches the icon.
+                BtnPlot.Padding = new Padding(10, 0, 0, 0);
+
+                // Ensure the button doesn't shrink to fit the small icon
+                BtnPlot.AutoSize = false;
+            }
+
             AdjustLayout();
 
+            this.BeginInvoke(new Action(() => {
+                BtnPlot.PerformClick();
+            }));
         }
-
         private void LoadSpendingCSV()
         {
             // Implementation for loading spending CSV
@@ -85,7 +110,8 @@ namespace WinFinanceApp
                     });
 
                 }
-                for(int i = 1; i < SpendingList.Count; i++)
+                SpendingList = SpendingList.OrderBy(r => r.Date).ToList();
+                for (int i = 1; i < SpendingList.Count; i++)
                 {
                     // Display each record in the logger for verification
                     var record0 = SpendingList[i-1];
@@ -125,126 +151,7 @@ namespace WinFinanceApp
             }
         }
 
-        //private void BtnPlot_Click(object sender, EventArgs e)
-        //{
-        //    try
-        //    {
-        //        LoadSpendingCSV();
-        //        if (SpendingList == null || SpendingList.Count == 0) return;
-
-        //        // --- 1. DYNAMIC YEAR CALCULATIONS ---
-        //        int curYear = DateTime.Now.Year;
-        //        int prevYear = curYear - 1;
-        //        int prevPrevYear = curYear - 2;
-
-        //        double avgYTD = SpendingList.Where(r => r.Date.Year == curYear)
-        //                                    .Select(r => (double)r.MonthlySpending)
-        //                                    .DefaultIfEmpty(0).Average();
-
-        //        double avgPrev = SpendingList.Where(r => r.Date.Year == prevYear)
-        //                                     .Select(r => (double)r.MonthlySpending)
-        //                                     .DefaultIfEmpty(0).Average();
-
-        //        double avgPrevPrev = SpendingList.Where(r => r.Date.Year == prevPrevYear)
-        //                                         .Select(r => (double)r.MonthlySpending)
-        //                                         .DefaultIfEmpty(0).Average();
-
-        //        // --- 2. PREPARE PLOT ---
-        //        fPlot.Plot.Clear();
-
-        //        double[] dates = SpendingList.Select(r => r.Date.ToOADate()).ToArray();
-        //        double[] monthlySpending = SpendingList.Select(r => (double)r.MonthlySpending).ToArray();
-
-        //        // Add Scatter
-        //        scatter = fPlot.Plot.Add.Scatter(dates, monthlySpending);
-        //        scatter.LineWidth = 3;
-        //        scatter.Color = ScottPlot.Colors.Blue;
-        //        scatter.MarkerSize = 12; // Adjusted dot size
-        //        scatter.MarkerShape = ScottPlot.MarkerShape.FilledCircle;
-        //        scatter.MarkerFillColor = ScottPlot.Colors.Red;
-        //        scatter.MarkerLineColor = ScottPlot.Colors.Blue;
-        //        scatter.MarkerLineWidth = 2;
-        //        scatter.LegendText = "Monthly Spending";
-
-        //        // --- 2b. ADD TOTAL DIVIDENDS LINE ---
-        //        // Calculate the sum for each point
-        //        double[] totalDividends = SpendingList.Select(r => r.DividentsIn + r.DividentsOut).ToArray();
-
-        //        // Add the second scatter plot
-        //        var divScatter = fPlot.Plot.Add.Scatter(dates, totalDividends);
-        //        divScatter.LineWidth = 2;
-        //        divScatter.Color = ScottPlot.Colors.Purple;
-        //        divScatter.MarkerSize = 0; // Hide dots on this line to keep it clean
-        //        divScatter.LegendText = "Total Dividends (In+Out)";
-
-        //        // --- 3. ADD DYNAMIC HORIZONTAL LINES ---
-        //        var lineYTD = fPlot.Plot.Add.HorizontalLine(avgYTD);
-        //        lineYTD.LegendText = $"{curYear} YTD Avg: {avgYTD:C0}";
-        //        lineYTD.LineColor = ScottPlot.Colors.SlateGray;
-        //        lineYTD.LineWidth = 2;
-
-        //        var linePrev = fPlot.Plot.Add.HorizontalLine(avgPrev);
-        //        linePrev.LegendText = $"{prevYear} Avg: {avgPrev:C0}";
-        //        linePrev.LineColor = ScottPlot.Colors.Green;
-        //        linePrev.LinePattern = ScottPlot.LinePattern.Dashed;
-
-        //        var linePrevPrev = fPlot.Plot.Add.HorizontalLine(avgPrevPrev);
-        //        linePrevPrev.LegendText = $"{prevPrevYear} Avg: {avgPrevPrev:C0}";
-        //        linePrevPrev.LineColor = ScottPlot.Colors.Orange;
-        //        linePrevPrev.LinePattern = ScottPlot.LinePattern.Dotted;
-
-        //        // --- 4. AXIS SETUP ---
-        //        var monthUnit = new ScottPlot.TickGenerators.TimeUnits.Month();
-        //        var dtGen = new ScottPlot.TickGenerators.DateTimeFixedInterval(monthUnit, 1);
-        //        dtGen.LabelFormatter = (DateTime dt) => dt.ToString("MM/yy");
-        //        fPlot.Plot.Axes.Bottom.TickGenerator = dtGen;
-        //        fPlot.Plot.Axes.Bottom.TickLabelStyle.Rotation = -45;
-
-        //        // Performance & Aesthetics
-        //        fPlot.Plot.FigureBackground.Color = ScottPlot.Colors.White;
-        //        fPlot.Plot.Axes.ContinuouslyAutoscale = false;
-
-        //        var yGen = new ScottPlot.TickGenerators.NumericAutomatic();
-        //        yGen.LabelFormatter = (double val) => val.ToString("C0");
-        //        fPlot.Plot.Axes.Left.TickGenerator = yGen;
-
-        //        // --- 5. INTERACTION & FONT STYLING ---
-        //        MyCrosshair = fPlot.Plot.Add.Crosshair(0, 0);
-        //        MyCrosshair.LineColor = ScottPlot.Colors.Red;
-
-        //        // NEW: Styled Hover Text for High Visibility
-        //        MyHoverText = fPlot.Plot.Add.Text("", dates[0], monthlySpending[0]);
-        //        MyHoverText.LabelFontSize = 14;              // Larger text
-        //        MyHoverText.LabelBold = true;                // Bold for visibility
-        //        MyHoverText.LabelFontName = "Verdana";       // Clear font
-        //        MyHoverText.LabelFontColor = ScottPlot.Colors.Black;
-        //        MyHoverText.LabelBackgroundColor = ScottPlot.Colors.Yellow; // High contrast
-        //        MyHoverText.LabelBorderColor = ScottPlot.Colors.Black;
-        //        MyHoverText.LabelBorderWidth = 2;
-        //        MyHoverText.LabelPadding = 8;
-
-        //        // Offset it so it doesn't cover the dot
-        //        MyHoverText.LabelAlignment = ScottPlot.Alignment.LowerCenter;
-
-        //        MyHoverText.IsVisible = false;
-
-
-
-        //        // --- 6. FINALIZE ---
-        //        fPlot.Plot.Axes.AutoScale();
-
-        //        // Increase top margin to 15% so the large Hover Box doesn't get cut off
-        //        var limits = fPlot.Plot.Axes.GetLimits();
-        //        fPlot.Plot.Axes.SetLimitsY(0, limits.Top * 1.15);
-
-        //        fPlot.Plot.ShowLegend(ScottPlot.Alignment.UpperRight);
-        //        fPlot.Refresh();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger?.SentEvent("Plotting Error: " + ex.Message, Logger.EnumLogLevel.ERROR_LEVEL);
-        //    }
-        //}
+        
 
         private void BtnPlot_Click(object sender, EventArgs e)
         {
@@ -450,6 +357,39 @@ namespace WinFinanceApp
                 MyHoverText.IsVisible = false;
                 fPlot.Refresh();
             }
+        }
+        private System.Drawing.Image MakeImageTransparent(System.Drawing.Image image, float opacity)
+        {
+            // Create a new bitmap with the same dimensions
+            System.Drawing.Bitmap bmp = new System.Drawing.Bitmap(image.Width, image.Height);
+
+            using (System.Drawing.Graphics g = System.Drawing.Graphics.FromImage(bmp))
+            {
+                // The ColorMatrix is what controls transparency (Matrix33 is the Alpha channel)
+                System.Drawing.Imaging.ColorMatrix matrix = new System.Drawing.Imaging.ColorMatrix();
+                matrix.Matrix33 = opacity; // 0.0f (invisible) to 1.0f (fully opaque)
+
+                System.Drawing.Imaging.ImageAttributes attributes = new System.Drawing.Imaging.ImageAttributes();
+                attributes.SetColorMatrix(matrix, System.Drawing.Imaging.ColorMatrixFlag.Default, System.Drawing.Imaging.ColorAdjustType.Bitmap);
+
+                // Draw the original image onto the new bitmap using the transparency attributes
+                g.DrawImage(image,
+                    new System.Drawing.Rectangle(0, 0, bmp.Width, bmp.Height),
+                    0, 0, image.Width, image.Height,
+                    System.Drawing.GraphicsUnit.Pixel, attributes);
+            }
+            return bmp;
+        }
+        private System.Drawing.Image ResizeButtonIcon(System.Drawing.Image img, int width, int height)
+        {
+            // We specify System.Drawing to avoid conflict with ScottPlot
+            System.Drawing.Bitmap b = new System.Drawing.Bitmap(width, height);
+            using (System.Drawing.Graphics g = System.Drawing.Graphics.FromImage(b))
+            {
+                g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                g.DrawImage(img, 0, 0, width, height);
+            }
+            return b;
         }
     } // End of Class
 } // End of Namespace

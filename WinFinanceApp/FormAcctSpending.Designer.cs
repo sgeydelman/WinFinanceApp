@@ -43,7 +43,6 @@
             this.numDividentsOut = new System.Windows.Forms.NumericUpDown();
             this.numFundAdded = new System.Windows.Forms.NumericUpDown();
             this.numAmount = new System.Windows.Forms.NumericUpDown();
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numWithdrawVal)).BeginInit();
@@ -51,7 +50,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.numDividentsOut)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numFundAdded)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numAmount)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
             // groupBox1
@@ -81,12 +79,19 @@
             // BtnPlot
             // 
             this.BtnPlot.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.BtnPlot.Location = new System.Drawing.Point(14, 532);
+            this.BtnPlot.BackColor = System.Drawing.SystemColors.GradientActiveCaption;
+            this.BtnPlot.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.BtnPlot.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.BtnPlot.ForeColor = System.Drawing.Color.DarkBlue;
+            this.BtnPlot.Image = global::WinFinanceApp.Properties.Resources.trend;
+            this.BtnPlot.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.BtnPlot.Location = new System.Drawing.Point(12, 506);
             this.BtnPlot.Name = "BtnPlot";
-            this.BtnPlot.Size = new System.Drawing.Size(75, 44);
+            this.BtnPlot.Size = new System.Drawing.Size(117, 70);
             this.BtnPlot.TabIndex = 5;
             this.BtnPlot.Text = "Refresh Plot";
-            this.BtnPlot.UseVisualStyleBackColor = true;
+            this.BtnPlot.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
+            this.BtnPlot.UseVisualStyleBackColor = false;
             this.BtnPlot.Click += new System.EventHandler(this.BtnPlot_Click);
             // 
             // groupBox2
@@ -235,27 +240,16 @@
             this.numAmount.TabIndex = 0;
             this.numAmount.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
-            // pictureBox1
-            // 
-            this.pictureBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.pictureBox1.Image = global::WinFinanceApp.Properties.Resources.trend;
-            this.pictureBox1.Location = new System.Drawing.Point(18, 476);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(57, 50);
-            this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.pictureBox1.TabIndex = 7;
-            this.pictureBox1.TabStop = false;
-            // 
             // FormAcctSpending
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.BackColor = System.Drawing.SystemColors.Control;
             this.ClientSize = new System.Drawing.Size(1463, 588);
-            this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.BtnPlot);
             this.Controls.Add(this.groupBox1);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D;
             this.Name = "FormAcctSpending";
             this.Text = "FormAcctSpending";
             this.Load += new System.EventHandler(this.FormAcctSpending_Load);
@@ -268,7 +262,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.numDividentsOut)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numFundAdded)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numAmount)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -290,6 +283,5 @@
         private System.Windows.Forms.Button BtnUpdate;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.NumericUpDown numWithdrawVal;
-        private System.Windows.Forms.PictureBox pictureBox1;
     }
 }
