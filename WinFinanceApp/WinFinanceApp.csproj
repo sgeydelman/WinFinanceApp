@@ -158,7 +158,6 @@
     <Compile Include="FormSetup.Designer.cs">
       <DependentUpon>FormSetup.cs</DependentUpon>
     </Compile>
-    <Compile Include="MyDataRaw.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="AboutBox1.resx">

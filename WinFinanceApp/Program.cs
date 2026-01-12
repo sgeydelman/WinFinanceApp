@@ -33,11 +33,7 @@ namespace WinFinanceApp
             Application.SetCompatibleTextRenderingDefault(false);
             Logger.Create(Properties.Settings.Default.SetupPath);
             Application.Run(new FormMain());
-            //  }
-            // else
-            // {
-            //     MessageBox.Show("An Instance of WinFinance application is already running!");
-            // }
+            
         }
     }
 }
