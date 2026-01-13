@@ -342,6 +342,8 @@ namespace WinFinanceApp
                 var result = MessageBox.Show($"This will append a new record to the spending file:{Environment.NewLine}{newRecord}{Environment.NewLine}Do you want to continue?", "Confirm Update", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
                 if (result == DialogResult.Yes)
                 {
+                    // --- NEW BACKUP LOGIC ---
+                    CreateBackup();
                     //append newRecord to spendingFile
                     File.AppendAllText(spendingFile, newRecord + Environment.NewLine);
 
@@ -547,6 +549,41 @@ namespace WinFinanceApp
             {
                 this._logger.SentEvent("Error deleting last record: " + ex.Message, Logger.EnumLogLevel.ERROR_LEVEL);
             }   
-        }
+        
     } // End of Class
+        private void CreateBackup()
+        {
+            try
+            {
+                if (!File.Exists(spendingFile)) return;
+
+                // 1. Define the Backup folder path
+                string baseDir = Path.GetDirectoryName(spendingFile);
+                string backupDir = Path.Combine(baseDir, "Backup");
+
+                // 2. Create subfolder if it doesn't exist
+                if (!Directory.Exists(backupDir))
+                {
+                    Directory.CreateDirectory(backupDir);
+                }
+
+                // 3. Create the timestamped filename
+                // Format: spending_13_Jan_26.csv (Included day to prevent overwriting same-month updates)
+                string timeStamp = DateTime.Now.ToString("dd_MMM_yy");
+                string fileNameOnly = Path.GetFileNameWithoutExtension(spendingFile);
+                string backupFileName = $"{fileNameOnly}_{timeStamp}.csv";
+                string destPath = Path.Combine(backupDir, backupFileName);
+
+                // 4. Perform the copy (True allows overwriting if you update twice in one day)
+                File.Copy(spendingFile, destPath, true);
+
+                _logger?.SentEvent($"Backup created: {backupFileName}", Logger.EnumLogLevel.INFO_LEVEL);
+            }
+            catch (Exception ex)
+            {
+                // We log the error but don't stop the main update if backup fails
+                _logger?.SentEvent("Backup failed: " + ex.Message, Logger.EnumLogLevel.ERROR_LEVEL);
+            }
+        }
+    }
 } // End of Namespace
