@@ -43,6 +43,7 @@
             this.numDividentsOut = new System.Windows.Forms.NumericUpDown();
             this.numFundAdded = new System.Windows.Forms.NumericUpDown();
             this.numAmount = new System.Windows.Forms.NumericUpDown();
+            this.BtnDleteLast = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numWithdrawVal)).BeginInit();
@@ -96,6 +97,7 @@
             // 
             // groupBox2
             // 
+            this.groupBox2.Controls.Add(this.BtnDleteLast);
             this.groupBox2.Controls.Add(this.BtnUpdate);
             this.groupBox2.Controls.Add(this.label5);
             this.groupBox2.Controls.Add(this.label4);
@@ -110,7 +112,7 @@
             this.groupBox2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.groupBox2.Location = new System.Drawing.Point(12, 12);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(117, 328);
+            this.groupBox2.Size = new System.Drawing.Size(117, 426);
             this.groupBox2.TabIndex = 6;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Add a new record for the month";
@@ -119,9 +121,9 @@
             // 
             this.BtnUpdate.Location = new System.Drawing.Point(6, 293);
             this.BtnUpdate.Name = "BtnUpdate";
-            this.BtnUpdate.Size = new System.Drawing.Size(75, 23);
+            this.BtnUpdate.Size = new System.Drawing.Size(75, 39);
             this.BtnUpdate.TabIndex = 2;
-            this.BtnUpdate.Text = "Record";
+            this.BtnUpdate.Text = "Record to file";
             this.BtnUpdate.UseVisualStyleBackColor = true;
             this.BtnUpdate.Click += new System.EventHandler(this.BtnUpdate_Click);
             // 
@@ -240,6 +242,16 @@
             this.numAmount.TabIndex = 0;
             this.numAmount.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
+            // BtnDleteLast
+            // 
+            this.BtnDleteLast.Location = new System.Drawing.Point(13, 373);
+            this.BtnDleteLast.Name = "BtnDleteLast";
+            this.BtnDleteLast.Size = new System.Drawing.Size(75, 47);
+            this.BtnDleteLast.TabIndex = 3;
+            this.BtnDleteLast.Text = "Delete Last Record";
+            this.BtnDleteLast.UseVisualStyleBackColor = true;
+            this.BtnDleteLast.Click += new System.EventHandler(this.BtnDleteLast_Click);
+            // 
             // FormAcctSpending
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -283,5 +295,6 @@
         private System.Windows.Forms.Button BtnUpdate;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.NumericUpDown numWithdrawVal;
+        private System.Windows.Forms.Button BtnDleteLast;
     }
 }

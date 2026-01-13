@@ -344,9 +344,18 @@ namespace WinFinanceApp
                 {
                     //append newRecord to spendingFile
                     File.AppendAllText(spendingFile, newRecord + Environment.NewLine);
-                    
+
                     _logger?.SentEvent("Update Success: " + "New record added successfully.", Logger.EnumLogLevel.INFO_LEVEL);
-                }
+                    //set all 5  numericalUpDown - numFundAdded ,numDividentsOut,numDividentIn,numWithdrawVal to 0
+                    numAmount.Value = 0;
+                    numFundAdded.Value = 0;
+                    numDividentsOut.Value = 0;
+                    numDividentsIn.Value = 0;
+                    numWithdrawVal.Value = 0;
+                    this.BeginInvoke(new Action(() => {
+                        BtnPlot.PerformClick();
+                    }));
+                }            
 
             }
             catch (Exception ex)
@@ -504,6 +513,40 @@ namespace WinFinanceApp
             sb.AppendLine($"Data Points: {totalCount} months");
 
             MessageBox.Show(sb.ToString(), "Financial Summary", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void BtnDleteLast_Click(object sender, EventArgs e)
+        {
+            //delete last line from spendingFile
+            try
+            {
+                if (!File.Exists(spendingFile))
+                {
+                    this._logger.SentEvent("Spending CSV file not found: " + spendingFile, Logger.EnumLogLevel.ERROR_LEVEL);
+                    return;
+                }
+                var lines = File.ReadAllLines(spendingFile).ToList();
+                if (lines.Count <= 1)
+                {
+                    MessageBox.Show("No records to delete.", "Delete Last Record", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+                //give a warning in meassge box that last record will be deleted from spendingFile
+                var result = MessageBox.Show($"This will delete the last record from the spending file:{Environment.NewLine}{lines.Last()}{Environment.NewLine}Do you want to continue?", "Confirm Delete", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                if (result == DialogResult.Yes)
+                {
+                    lines.RemoveAt(lines.Count - 1);
+                    File.WriteAllLines(spendingFile, lines);
+                    this._logger.SentEvent("Delete Success: " + "Last record deleted successfully.", Logger.EnumLogLevel.INFO_LEVEL);
+                    this.BeginInvoke(new Action(() => {
+                        BtnPlot.PerformClick();
+                    }));
+                }
+            }
+            catch (Exception ex)
+            {
+                this._logger.SentEvent("Error deleting last record: " + ex.Message, Logger.EnumLogLevel.ERROR_LEVEL);
+            }   
         }
     } // End of Class
 } // End of Namespace
