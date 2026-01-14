@@ -295,7 +295,7 @@ namespace WinFinanceApp
                     this._logger.SentEvent($"Using preset mapping for '{fname}': idxSymbol={idxSymbol}, idxCurrentValue={idxCurrentValue}, idxPercent={idxPercent}", Logger.EnumLogLevel.INFO_LEVEL);
                 }
 
-                this._logger.SentEvent($"CSV headerIndex={headerIndex}, idxSymbol={idxSymbol}, idxDescription={idxDescription}, idxCurrentValue={idxCurrentValue}, idxPercent={idxPercent}", Logger.EnumLogLevel.INFO_LEVEL);
+              //  this._logger.SentEvent($"CSV headerIndex={headerIndex}, idxSymbol={idxSymbol}, idxDescription={idxDescription}, idxCurrentValue={idxCurrentValue}, idxPercent={idxPercent}", Logger.EnumLogLevel.INFO_LEVEL);
 
                 int startRow = (headerIndex >= 0) ? headerIndex + 1 : 0;
                 int naCounter = 0;

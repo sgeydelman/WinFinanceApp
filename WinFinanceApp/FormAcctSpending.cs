@@ -55,40 +55,47 @@ namespace WinFinanceApp
 
         }
 
+       
         private void FormAcctSpending_Load(object sender, EventArgs e)
         {
-            this._logger = Logger.Instance;
-            inif = new Ini(_logger.SetupPath);
-            this.MyFinance = CMyFinance.Instance;
+            // 1. REMOVED REDUNDANT INITIALIZATIONS
+            // (Logger, MyFinance, and Ini should be set in the Constructor only)
 
+            // 2. EVENT SUBSCRIPTIONS
             fPlot.MouseDown += fPlot_MouseDown;
             fPlot.MouseUp += fPlot_MouseUp;
 
+            // 3. ICON HANDLING WITH MEMORY CLEANUP
             if (BtnPlot.Image != null)
             {
-                // 1. FORCE THE SIZE: Use a small fixed size (24x24).
-                // If we use BtnPlot.Width, the icon becomes a background and causes overlap.
-                System.Drawing.Image smallIcon = ResizeButtonIcon(BtnPlot.Image, 24, 24);
+                // Store the original image from the designer to dispose of it later if needed
+                System.Drawing.Image originalDesignerImage = BtnPlot.Image;
 
-                // 2. TRANSPARENCY: 0.2f makes it a very subtle watermark.
-                BtnPlot.Image = MakeImageTransparent(smallIcon, 0.99f);
+                // Create the resized version
+                using (System.Drawing.Image smallIcon = ResizeButtonIcon(originalDesignerImage, 24, 24))
+                {
+                    // Create the transparent version
+                    // Note: We don't 'using' this one yet because we assign it to the button
+                    BtnPlot.Image = MakeImageTransparent(smallIcon, 0.99f);
+                }
+                // smallIcon is automatically disposed here by the 'using' block
 
-                // 3. THE ALIGNMENT COMBO:
-                // This is the most stable configuration for WinForms buttons:
+                // OPTIONAL: originalDesignerImage.Dispose(); 
+                // Only dispose originalDesignerImage if you are sure you won't need the 
+                // high-res version again during this form's lifetime.
+
+                // 4. BUTTON STYLING
                 BtnPlot.TextImageRelation = TextImageRelation.ImageBeforeText;
                 BtnPlot.ImageAlign = ContentAlignment.MiddleLeft;
                 BtnPlot.TextAlign = ContentAlignment.MiddleCenter;
-
-                // 4. THE GAP:
-                // Pushing the text 10 pixels to the right to ensure it never touches the icon.
                 BtnPlot.Padding = new Padding(10, 0, 0, 0);
-
-                // Ensure the button doesn't shrink to fit the small icon
                 BtnPlot.AutoSize = false;
             }
 
+            // 5. INITIAL LAYOUT AND PLOT
             AdjustLayout();
 
+            // Trigger the initial plot after the form is fully rendered
             this.BeginInvoke(new Action(() => {
                 BtnPlot.PerformClick();
             }));
