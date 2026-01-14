@@ -54,6 +54,14 @@ namespace WinFinanceApp
         public FormIRA1()
         {
             InitializeComponent();
+
+            // Ensure numeric sorting is available for the deviation column
+            // subscribe to SortCompare so we can compare numeric values stored in cells
+            try
+            {
+                this.dataGrid.SortCompare += DataGrid_SortCompare;
+            }
+            catch { }
         }
 
         private void FormIRA1_Load(object sender, EventArgs e)
@@ -631,6 +639,51 @@ namespace WinFinanceApp
             catch { }
 
             LoadDataFromCSV(sender, e);
+        }
+
+        // DataGrid SortCompare handler to allow numeric sorting of the deviation column
+        private void DataGrid_SortCompare(object sender, DataGridViewSortCompareEventArgs e)
+        {
+            try
+            {
+                // deviation column is index 6 in our grid
+                if (e.Column != null && e.Column.Index == 6)
+                {
+                    double v1 = ExtractDeviationNumeric(e.CellValue1);
+                    double v2 = ExtractDeviationNumeric(e.CellValue2);
+
+                    // Treat NaN (N/A) as largest to push them to the end
+                    if (double.IsNaN(v1)) v1 = double.MaxValue;
+                    if (double.IsNaN(v2)) v2 = double.MaxValue;
+
+                    int cmp = v1.CompareTo(v2);
+                    if (cmp == 0)
+                        cmp = string.Compare(Convert.ToString(e.CellValue1), Convert.ToString(e.CellValue2), StringComparison.InvariantCultureIgnoreCase);
+
+                    e.SortResult = cmp;
+                    e.Handled = true;
+                }
+            }
+            catch { }
+        }
+
+        // Extract numeric deviation value from the cell display (e.g. "+12.34" or "⚠ +5.67" or "N/A")
+        private double ExtractDeviationNumeric(object cellValue)
+        {
+            if (cellValue == null) return double.NaN;
+            string s = cellValue.ToString();
+            s = s.Replace("⚠", "").Trim();
+            if (string.IsNullOrWhiteSpace(s) || s.Equals("N/A", StringComparison.OrdinalIgnoreCase))
+                return double.NaN;
+
+            // remove possible percent sign if present
+            if (s.EndsWith("%")) s = s.Substring(0, s.Length - 1).Trim();
+            // remove plus sign and spaces
+            s = s.Replace("+", "").Replace(" ", "");
+
+            if (double.TryParse(s, NumberStyles.Float, CultureInfo.InvariantCulture, out double d))
+                return d;
+            return double.NaN;
         }
     }
 }
