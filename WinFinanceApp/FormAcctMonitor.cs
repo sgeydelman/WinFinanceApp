@@ -45,6 +45,36 @@ namespace WinFinanceApp
         public FormAcctMonitor()
         {
             InitializeComponent();
+            // Ensure dataGrid (and any DataGridView children) resize with the form when hosted/docked
+            try
+            {
+                if (this.dataGrid != null)
+                {
+                    this.dataGrid.Dock = DockStyle.Fill;
+                    this.dataGrid.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+                    this.dataGrid.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+                    this.dataGrid.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+                }
+
+                // Also defensively apply to any DataGridView controls nested in panels or other containers
+                Action<Control.ControlCollection> applyToChildren = null;
+                applyToChildren = (cols) =>
+                {
+                    foreach (Control c in cols)
+                    {
+                        if (c is DataGridView dv)
+                        {
+                            dv.Dock = DockStyle.Fill;
+                            dv.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+                            dv.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+                            dv.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+                        }
+                        if (c.HasChildren) applyToChildren(c.Controls);
+                    }
+                };
+                applyToChildren(this.Controls);
+            }
+            catch { }
         }
 
         private void FormAcctMonitor_Load(object sender, EventArgs e)
