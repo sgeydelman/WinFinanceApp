@@ -120,6 +120,37 @@ namespace WinFinanceApp
             {
                 // Force layout refresh
                 this.PerformLayout();
+                if (dataGrid.Columns.Count > 0)
+                {
+                    // 1. Calculate the starting X-position for the first label (the 'Value' column)
+                    // This is: Grid Start + Row Header + Description Width + Key Width
+                    int xOffset = dataGrid.Location.X + (dataGrid.RowHeadersVisible ? dataGrid.RowHeadersWidth : 0);
+                    xOffset += dataGrid.Columns["Description"].Width;
+                    xOffset += dataGrid.Columns["Key"].Width;
+
+                    // 2. Move the TableLayoutPanel to start exactly where the 'Value' column starts
+                    tableLP.Location = new Point(xOffset, tableLP.Location.Y);
+
+                    // 3. Match the widths of the TableLayoutPanel columns to the DataGrid columns
+                    // We set the Width of each ColumnStyle in the TableLayoutPanel
+                    tableLP.ColumnStyles[0].SizeType = SizeType.Absolute;
+                    tableLP.ColumnStyles[0].Width = dataGrid.Columns["Value"].Width;
+
+                    tableLP.ColumnStyles[1].SizeType = SizeType.Absolute;
+                    tableLP.ColumnStyles[1].Width = dataGrid.Columns["CurPercent"].Width;
+
+                    tableLP.ColumnStyles[2].SizeType = SizeType.Absolute;
+                    tableLP.ColumnStyles[2].Width = dataGrid.Columns["TargetPercent"].Width;
+
+                    tableLP.ColumnStyles[3].SizeType = SizeType.Absolute;
+                    tableLP.ColumnStyles[3].Width = dataGrid.Columns["RebalanceValue"].Width;
+
+                    // 4. Update the total width of the TableLayoutPanel to match the sum of these 4 columns
+                    tableLP.Width = (int)(tableLP.ColumnStyles[0].Width +
+                                         tableLP.ColumnStyles[1].Width +
+                                         tableLP.ColumnStyles[2].Width +
+                                         tableLP.ColumnStyles[3].Width);
+                }
             }
         }
 
@@ -451,8 +482,8 @@ namespace WinFinanceApp
 
                 TotalCurValue = Math.Round(accountDictionary.Values.Sum(dp => dp.value), 1);
                 TotalTargetPercent = positions.Sum(pair => pair.Value);
-                this.lblTotalVal.Text = TotalCurValue.ToString();
-                this.lblTotalTarget.Text = TotalTargetPercent.ToString();
+                this.lblTotalVal.Text = TotalCurValue.ToString("C1");
+                this.lblTotalTarget.Text = $"{TotalTargetPercent.ToString():0.0}%";
 
                 // Rebalance computation
                 double RawBuysNeeded = 0;
@@ -507,9 +538,9 @@ namespace WinFinanceApp
                 }
 
                 TotalCurPercent = Math.Round(accountDictionary.Values.Sum(dp => double.IsNaN(dp.curPercent) ? 0.0 : dp.curPercent), 1);
-                this.lblTotalCur.Text = TotalCurPercent.ToString();
+                this.lblTotalCur.Text = $"{TotalCurPercent.ToString():0.0}%";
                 double totalRebalance = Math.Round(accountDictionary.Values.Sum(dp => double.IsNaN(dp.valRebalance) ? 0.0 : dp.valRebalance), 3);
-                lblTotalRebalance.Text = totalRebalance.ToString();
+                lblTotalRebalance.Text = totalRebalance.ToString("C2");
 
                 // Populate grid with styling for rebalance and deviation
                 foreach (var kvp in accountDictionary)
