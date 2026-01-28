@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Forms.VisualStyles;
 
 namespace WinFinanceApp
 {
@@ -177,7 +178,8 @@ namespace WinFinanceApp
         public void ParseTWRCSV( string[] lines)
         {
             //var lines = File.ReadAllLines(filePath);
-
+            allDates.Clear();
+            accounts.Clear();
             // Find the header row
             int headerRowIndex = -1;
             for (int i = 0; i < lines.Length; i++)
@@ -193,7 +195,12 @@ namespace WinFinanceApp
                 throw new Exception("Could not find header row");
 
             // Parse date headers
-            var dateHeaders = lines[headerRowIndex].Split(',');
+            // var dateHeaders = lines[headerRowIndex].Split(',');
+            var dateHeaders = lines[headerRowIndex]
+     .Split(',')
+     .Select(h => h.Trim().Trim('"').Trim())
+     .ToArray();
+
 
             for (int i = 1; i < dateHeaders.Length; i++)
             {
@@ -201,22 +208,47 @@ namespace WinFinanceApp
                 if (string.IsNullOrEmpty(header))
                     continue;
 
-                // Try parsing as Excel serial number first
-                if (int.TryParse(header, out int serialDate))
+                //// Try parsing as Excel serial number first
+                //if (int.TryParse(header, out int serialDate))
+                //{
+                //    allDates.Add(ExcelSerialToDate(serialDate));
+                //}
+                //// Try parsing as "MMM-yy" format (e.g., "Oct-25")
+                //else if (DateTime.TryParseExact(header, "MMM-yy", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime parsedDate1))
+                //{
+                //    allDates.Add(parsedDate1);
+                //}
+                // Try parsing as "MMM dd" format (e.g., "Nov 25")
+                // Try parsing as "MMM dd" format (e.g., "Nov 25")
+                if (DateTime.TryParseExact(header, "MMM dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime parsedDate))
+                {
+                    allDates.Add(parsedDate);
+                }
+                // Try parsing as "MMM yyyy" format (e.g., "Dec 2025")
+                else if (DateTime.TryParse(header, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime parsedDate2))
+                {
+                    allDates.Add(parsedDate2);
+                }
+                // Try parsing as Excel serial number
+                else if (int.TryParse(header, out int serialDate))
                 {
                     allDates.Add(ExcelSerialToDate(serialDate));
                 }
                 // Try parsing as "MMM-yy" format (e.g., "Oct-25")
-                else if (DateTime.TryParseExact(header, "MMM-yy", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime parsedDate))
+                else if (DateTime.TryParseExact(header, "MMM-yy", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime parsedDate1))
                 {
-                    allDates.Add(parsedDate);
+                    allDates.Add(parsedDate1);
                 }
             }
 
             // Parse account data
             for (int i = headerRowIndex + 1; i < lines.Length; i++)
             {
-                var columns = lines[i].Split(',');
+                //var columns = lines[i].Split(',');
+                var columns = lines[i]
+    .Split(',')
+    .Select(h => h.Trim().Trim('"').Trim())
+    .ToArray();
                 if (columns.Length < 2)
                     continue;
 
@@ -262,7 +294,7 @@ namespace WinFinanceApp
                 accounts[accountName] = accountReturns;
             }
         }
-
+        
         // Get list of available months for user selection
         public List<string> GetAvailableMonths()
         {

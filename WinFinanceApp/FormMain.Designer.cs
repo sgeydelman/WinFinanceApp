@@ -48,6 +48,7 @@ namespace WinFinanceApp
             this.BtnReturn = new System.Windows.Forms.Button();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.BtnAcctSpending = new System.Windows.Forms.Button();
+            this.miscToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
@@ -56,7 +57,7 @@ namespace WinFinanceApp
             // 
             this.BtnSetup.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.BtnSetup.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.BtnSetup.Location = new System.Drawing.Point(4, 392);
+            this.BtnSetup.Location = new System.Drawing.Point(4, 398);
             this.BtnSetup.Name = "BtnSetup";
             this.BtnSetup.Size = new System.Drawing.Size(135, 64);
             this.BtnSetup.TabIndex = 182;
@@ -113,7 +114,8 @@ namespace WinFinanceApp
             this.oPMMonitorToolStripMenuItem,
             this.sETUPToolStripMenuItem,
             this.historicalRetrunToolStripMenuItem,
-            this.sETUPToolStripMenuItem1});
+            this.sETUPToolStripMenuItem1,
+            this.miscToolStripMenuItem});
             this.viewScreensToolStripMenuItem.Name = "viewScreensToolStripMenuItem";
             this.viewScreensToolStripMenuItem.Size = new System.Drawing.Size(112, 24);
             this.viewScreensToolStripMenuItem.Text = "View Screens";
@@ -233,6 +235,13 @@ namespace WinFinanceApp
             this.BtnAcctSpending.UseVisualStyleBackColor = true;
             this.BtnAcctSpending.Click += new System.EventHandler(this.BtnAcctSpending_Click);
             // 
+            // miscToolStripMenuItem
+            // 
+            this.miscToolStripMenuItem.Name = "miscToolStripMenuItem";
+            this.miscToolStripMenuItem.Size = new System.Drawing.Size(211, 24);
+            this.miscToolStripMenuItem.Text = "Misc";
+            this.miscToolStripMenuItem.Click += new System.EventHandler(this.miscToolStripMenuItem_Click);
+            // 
             // FormMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -283,5 +292,6 @@ namespace WinFinanceApp
         private System.Windows.Forms.ToolStripMenuItem historicalRetrunToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem sETUPToolStripMenuItem1;
         protected System.Windows.Forms.Button BtnAcctSpending;
+        private System.Windows.Forms.ToolStripMenuItem miscToolStripMenuItem;
     }
 }

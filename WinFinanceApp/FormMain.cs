@@ -15,7 +15,7 @@ namespace WinFinanceApp
 {
     public partial class FormMain : Form
     {
-        Form formIRA1, formSetup, formMonitor, formReturn, formSpending;
+        Form formIRA1, formSetup, formMonitor, formReturn, formSpending, formMisc;
         protected Logger _logger;
         Ini iniF;
         protected CMyFinance MyFinance;
@@ -174,6 +174,7 @@ namespace WinFinanceApp
             formMonitor = new FormAcctMonitor();
             formReturn = new FormReturn();
             formSpending = new FormAcctSpending();
+            formMisc = new FormMisc();
         }
 
         private void BtnIRA_S_Click(object sender, EventArgs e)
@@ -251,6 +252,13 @@ namespace WinFinanceApp
         {
             this.ShowForm(formSpending);
         }
+
+        private void miscToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            this.ShowForm(formMisc);
+        }
+
+        
 
         private void sETUPToolStripMenuItem1_Click(object sender, EventArgs e)
         {
