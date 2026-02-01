@@ -31,8 +31,8 @@ namespace WinFinanceApp
                 dataGrid.Columns[0].ReadOnly = true;
 
             // Preload rows with default "--" values as you suggested
-            this.dataGrid.Rows.Add("WF Joint", "--", "--", "--", "--", "--", "--", "--", "--", "--", "Jan-15-2019");
-            this.dataGrid.Rows.Add("WF IRA", "--", "--", "--", "--", "--", "--", "--", "--", "--", "Apr-24-2025");
+            this.dataGrid.Rows.Add("WF Joint", "--", 0, 0, 0, 0, 0, 0, "--", 0, "Jan-15-2019");
+            this.dataGrid.Rows.Add("WF IRA", "--", 0, 0, 0, "--", "--", "--", "--", 0, "Apr-24-2025");
         }
 
         private void BtnLoad_Click(object sender, EventArgs e)
