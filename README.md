@@ -280,4 +280,4 @@ This application is provided as-is for personal investment analysis. Always veri
 
 **Last Updated**: February 2026
 
-For the latest version and updates, check the [Releases](../../releases) page.
+
