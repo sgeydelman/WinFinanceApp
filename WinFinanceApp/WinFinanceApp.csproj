@@ -219,6 +219,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="financial-profit.ico" />
+    <None Include="README.md" />
     <None Include="Resources\trend.png" />
     <None Include="Resources\money.png" />
   </ItemGroup>
