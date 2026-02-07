@@ -1,4 +1,4 @@
-# WinFinanceApp# WinFinanceApp
+# WinFinanceApp
 
 A Windows Forms application for analyzing and monitoring Fidelity investment brokerage accounts. This tool helps you track portfolio performance, manage account rebalancing, and analyze spending patterns.
 
@@ -199,6 +199,67 @@ Assembly metadata is configured in `Properties/AssemblyInfo.cs`:
 
 Update these values to match your project information.
 
+## Architecture & Design Patterns
+
+### Singleton Pattern
+
+WinFinanceApp implements the **Singleton design pattern** for critical application-wide components that need to be accessible across all forms and screens without passing references.
+
+**Singletons Used:**
+
+1. **Logger (Singleton)**
+   - Single instance throughout the entire application
+   - Accessible from all forms: `Logger.Instance`
+   - Responsible for logging events and errors
+   - Maintains consistent logging behavior across all screens
+   - Supports multiple log levels (INFO, WARNING, ERROR, EXCEPTION)
+   - Example usage: `this._logger.SentEvent("message", Logger.EnumLogLevel.INFO_LEVEL);`
+
+2. **CMyFinance (Singleton)**
+   - Single instance of the financial data manager
+   - Accessible from all forms: `CMyFinance.Instance`
+   - Manages portfolio data, calculations, and application state
+   - Maintains financial data consistency across all components
+   - Shared access to account information and calculations
+   - Used by FormReturn, FormAcctMonitor, FormAcctSpending, and other forms
+   - Example usage: `var data = this.MyFinance.GetPortfolioData();`
+
+**Benefits of this approach:**
+
+- **Global Access** - Any form can access Logger and CMyFinance without passing references
+- **Consistent State** - Single instance ensures data consistency across the application
+- **Memory Efficiency** - Only one instance of each singleton exists in memory
+- **Simplified Communication** - Forms can easily share data and state through singletons
+- **Easier Testing** - Can mock singletons for unit testing
+
+**Implementation Pattern:**
+
+```csharp
+// In any form:
+protected Logger _logger = Logger.Instance;
+protected CMyFinance MyFinance = CMyFinance.Instance;
+
+// Access logging from anywhere:
+this._logger.SentEvent("Data loaded successfully", Logger.EnumLogLevel.INFO_LEVEL);
+
+// Access financial data from anywhere:
+var portfolioData = this.MyFinance.GetPortfolioData();
+```
+
+**Data Access Architecture:**
+
+```
+All Forms/Screens (Form1, FormReturn, FormAcctMonitor, etc.)
+    ↓
+Logger.Instance (Singleton) → Application-wide logging & event tracking
+    ↓
+CMyFinance.Instance (Singleton) → Shared financial data & calculations
+    ↓
+INI Configuration Files → Persistent strategy & settings storage
+    ↓
+Fidelity CSV Files → Portfolio & return data import
+```
+
 ## Data File Format
 
 All CSV files should include appropriate headers. The application expects standard Fidelity export formats with the following general structure:
@@ -280,4 +341,4 @@ This application is provided as-is for personal investment analysis. Always veri
 
 **Last Updated**: February 2026
 
-
+For the latest version and updates, check the [Releases](../../releases) page.
