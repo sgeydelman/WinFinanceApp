@@ -201,8 +201,13 @@ namespace WinFinanceApp
                         }
 
                         if (IsEndOfDataLine(line)) break;
-
-                        string[] parts = SplitCsvLine(line);
+                        //if last character in line is coma, add a space to prevent split issues
+                        string item = line;
+                        if (item.EndsWith(",")& !item.Contains("Pending activity"))
+                        {
+                            item = item.TrimEnd(',') + " ";
+                        }
+                        string[] parts = SplitCsvLine(item);
                         if (parts.Length < 8) continue;
 
                         AccountStruct data = new AccountStruct();
@@ -316,7 +321,13 @@ namespace WinFinanceApp
                 }
                 if (IsEndOfDataLine(line)) break;
 
-                string[] parts = SplitCsvLine(line);
+                string item = line;
+                if (item.EndsWith(",") & !item.Contains("Pending activity"))
+                {
+                    item = item.TrimEnd(',') + " ";
+                }
+                string[] parts = SplitCsvLine(item);
+                //string[] parts = SplitCsvLine(line);
                 if (parts.Length < 8) continue;
 
                 bool isJoint = line.Contains("Joint");
