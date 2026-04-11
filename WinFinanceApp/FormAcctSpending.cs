@@ -52,10 +52,14 @@ namespace WinFinanceApp
             this._logger = Logger.Instance;
             inif = new Ini(_logger.SetupPath);
             this.MyFinance = CMyFinance.Instance;
+            fPlot.UserInputProcessor.UserActionResponses
+     .RemoveAll(r => r.GetType().Name.Contains("Benchmark"));
+           // if (benchmarkResponse != null)
+           //     fPlot.UserInputProcessor.UserActionResponses.Remove(benchmarkResponse);
 
         }
 
-       
+
         private void FormAcctSpending_Load(object sender, EventArgs e)
         {
             // 1. REMOVED REDUNDANT INITIALIZATIONS
@@ -106,7 +110,7 @@ namespace WinFinanceApp
             //filePath is the path to the CSV file in C:\Users\Public\Documents
 
             SpendingList = new List<SpendingRecord>();
-           // string spendingFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonDocuments), "FinanceData", "spending.csv");
+            // string spendingFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonDocuments), "FinanceData", "spending.csv");
             if (!File.Exists(spendingFile))
             {
                 this._logger.SentEvent("Spending CSV file not found: " + spendingFile, Logger.EnumLogLevel.ERROR_LEVEL);
@@ -133,7 +137,7 @@ namespace WinFinanceApp
                         DividentsOut = double.Parse(columns[3]),
                         DividentsIn = double.Parse(columns[4]),
                         WithdrawVal = double.Parse(columns[5])
-                        
+
                     });
 
                 }
@@ -141,11 +145,13 @@ namespace WinFinanceApp
                 for (int i = 1; i < SpendingList.Count; i++)
                 {
                     // Display each record in the logger for verification
-                    var record0 = SpendingList[i-1];
+                    var record0 = SpendingList[i - 1];
                     var record1 = SpendingList[i];
-                    record1.MonthlySpending = Math.Round((record0.Amount - record1.Amount + record1.FundAdded + record1.DividentsOut),2);
+                    record1.MonthlySpending = Math.Round((record0.Amount - record1.Amount + record1.FundAdded + record1.DividentsOut), 2);
+                    // WithdrawVal is a paid tax (stored as negative), so spending before tax excludes it
+                    record1.SpendBeforeTax = Math.Round(record1.MonthlySpending + record1.WithdrawVal, 2);
                     SpendingList[i] = record1;
-                    
+
                 }
 
             }
@@ -180,7 +186,7 @@ namespace WinFinanceApp
 
 
 
-        
+
         private void BtnPlot_Click(object sender, EventArgs e)
         {
             try
@@ -205,9 +211,21 @@ namespace WinFinanceApp
                                                  .Select(r => r.MonthlySpending)
                                                  .DefaultIfEmpty(0).Average();
 
+                double avgYTD_BT = SpendingList.Where(r => r.Date.Year == curYear && r.MonthlySpending != 0)
+                                               .Select(r => r.SpendBeforeTax)
+                                               .DefaultIfEmpty(0).Average();
+
+                double avgPrev_BT = SpendingList.Where(r => r.Date.Year == prevYear && r.MonthlySpending != 0)
+                                                .Select(r => r.SpendBeforeTax)
+                                                .DefaultIfEmpty(0).Average();
+
+                double avgPrevPrev_BT = SpendingList.Where(r => r.Date.Year == prevPrevYear && r.MonthlySpending != 0)
+                                                    .Select(r => r.SpendBeforeTax)
+                                                    .DefaultIfEmpty(0).Average();
+
                 // --- 2. PREPARE PLOT ---
                 fPlot.Plot.Clear();
-
+                fPlot.Plot.Benchmark.IsVisible = false;
                 double[] dates = SpendingList.Select(r => r.Date.ToOADate()).ToArray();
                 double[] monthlySpending = SpendingList.Select(r => r.MonthlySpending).ToArray();
                 double[] totalDividends = SpendingList.Select(r => r.DividentsIn + r.DividentsOut).ToArray();
@@ -220,7 +238,7 @@ namespace WinFinanceApp
                 scatter.MarkerShape = ScottPlot.MarkerShape.OpenCircle;
                 scatter.LegendText = "Monthly Spending";
 
-                              
+
                 // --- SPECIAL MARKERS & LABELS FOR SPECIAL TRANSACTIONS ---
                 foreach (var record in SpendingList)
                 {
@@ -275,17 +293,17 @@ namespace WinFinanceApp
 
                 // --- 3. DYNAMIC HORIZONTAL AVERAGE LINES ---
                 var lineYTD = fPlot.Plot.Add.HorizontalLine(avgYTD);
-                lineYTD.LegendText = $"{curYear} YTD Avg: {avgYTD:C0}";
+                lineYTD.LegendText = $"{curYear} YTD Avg: {avgYTD:C0}  (before tax: {avgYTD_BT:C0})";
                 lineYTD.LineColor = ScottPlot.Colors.SlateGray;
                 lineYTD.LineWidth = 2;
 
                 var linePrev = fPlot.Plot.Add.HorizontalLine(avgPrev);
-                linePrev.LegendText = $"{prevYear} Avg: {avgPrev:C0}";
+                linePrev.LegendText = $"{prevYear} Avg: {avgPrev:C0}  (before tax: {avgPrev_BT:C0})";
                 linePrev.LineColor = ScottPlot.Colors.Green;
                 linePrev.LinePattern = ScottPlot.LinePattern.Dashed;
 
                 var linePrevPrev = fPlot.Plot.Add.HorizontalLine(avgPrevPrev);
-                linePrevPrev.LegendText = $"{prevPrevYear} Avg: {avgPrevPrev:C0}";
+                linePrevPrev.LegendText = $"{prevPrevYear} Avg: {avgPrevPrev:C0}  (before tax: {avgPrevPrev_BT:C0})";
                 linePrevPrev.LineColor = ScottPlot.Colors.Orange;
                 linePrevPrev.LinePattern = ScottPlot.LinePattern.Dotted;
 
@@ -320,7 +338,7 @@ namespace WinFinanceApp
                 fPlot.Plot.Axes.AutoScale();
                 var limits = fPlot.Plot.Axes.GetLimits();
                 fPlot.Plot.Axes.SetLimitsY(0, limits.Top * 1.25); // Room for labels at the top
-
+                fPlot.Plot.Axes.Rules.Add(new ScottPlot.AxisRules.LockedBottom(fPlot.Plot.Axes.Left, 0));
                 fPlot.Plot.ShowLegend(ScottPlot.Alignment.UpperRight);
                 fPlot.Refresh();
             }
@@ -332,14 +350,14 @@ namespace WinFinanceApp
         // At the top of your class
         private ScottPlot.Coordinates LastSnappedCoord;
 
-       
+
         private void fPlot_MouseMove(object sender, MouseEventArgs e)
         {
 
         }
         private void BtnUpdate_Click(object sender, EventArgs e)
         {
-            try 
+            try
             {
                 // get a current date as string in format MM/dd/yyyy
                 string currentDate = DateTime.Now.ToString("MM/dd/yyyy");
@@ -364,14 +382,14 @@ namespace WinFinanceApp
                     this.BeginInvoke(new Action(() => {
                         BtnPlot.PerformClick();
                     }));
-                }            
+                }
 
             }
             catch (Exception ex)
             {
                 _logger?.SentEvent("Update Error: " + ex.Message, Logger.EnumLogLevel.ERROR_LEVEL);
             }
-            
+
 
         }
         private void fPlot_MouseDown(object sender, MouseEventArgs e)
@@ -396,10 +414,12 @@ namespace WinFinanceApp
                     DateTime ptDate = DateTime.FromOADate(nearest.Coordinates.X);
                     string txt = $"{ptDate:MMM, yyyy}{Environment.NewLine}";
                     txt += $"Spent: {record.MonthlySpending:C2}{Environment.NewLine}";
+                    if (record.WithdrawVal != 0)
+                        txt += $"Spent (before tax): {record.SpendBeforeTax:C2}{Environment.NewLine}";
 
                     double totalDiv = record.DividentsIn + record.DividentsOut;
                     if (totalDiv != 0) txt += $"Total Div: {totalDiv:C2}{Environment.NewLine}";
-                    if (record.WithdrawVal != 0) txt += $"Withd: {record.WithdrawVal:C2}";
+                    if (record.WithdrawVal != 0) txt += $"Tax Paid: {Math.Abs(record.WithdrawVal):C2}";
 
                     // 5. Dynamic Coloring based on Goal (e.g., $4000)
                     double spendingGoal = 4000;
@@ -496,6 +516,8 @@ namespace WinFinanceApp
             double totalDividends = visibleRecords.Sum(r => r.DividentsIn + r.DividentsOut);
             double avgDividends = calcRecords.Any() ? totalDividends / calcRecords.Count : 0;
             double avgMonthly = calcRecords.Any() ? totalSpent / calcRecords.Count : 0;
+            double totalSpentBT = calcRecords.Sum(r => r.SpendBeforeTax);
+            double avgMonthlyBT = calcRecords.Any() ? totalSpentBT / calcRecords.Count : 0;
 
             // 4. Calculate Duration (Years and Months)
             int totalCount = visibleRecords.Count;
@@ -513,6 +535,8 @@ namespace WinFinanceApp
             sb.AppendLine(new string('-', 40));
             sb.AppendLine($"Total Spending:    {totalSpent:C2}");
             sb.AppendLine($"Avg Monthly:       {avgMonthly:C2}");
+            sb.AppendLine($"Total Spending (before tax): {totalSpentBT:C2}");
+            sb.AppendLine($"Avg Monthly (before tax):    {avgMonthlyBT:C2}");
             sb.AppendLine($"Total Funds Added: {totalAdded:C2}");
             sb.AppendLine($"Total Dividends:   {totalDividends:C2}");
             sb.AppendLine($" Avg Dividends:    {avgDividends:C2}");
@@ -555,9 +579,9 @@ namespace WinFinanceApp
             catch (Exception ex)
             {
                 this._logger.SentEvent("Error deleting last record: " + ex.Message, Logger.EnumLogLevel.ERROR_LEVEL);
-            }   
-        
-    } // End of Class
+            }
+
+        } // End of Class
         private void CreateBackup()
         {
             try
@@ -591,6 +615,13 @@ namespace WinFinanceApp
                 // We log the error but don't stop the main update if backup fails
                 _logger?.SentEvent("Backup failed: " + ex.Message, Logger.EnumLogLevel.ERROR_LEVEL);
             }
+        }
+
+        private void fPlot_DoubleClick(object sender, EventArgs e)
+        {
+            fPlot.Plot.Benchmark.IsVisible = false;
+            fPlot.Refresh();
+
         }
     }
 } // End of Namespace

@@ -43,6 +43,7 @@ namespace WinFinanceApp
         public double DividentsIn;
         public double WithdrawVal;
         public double MonthlySpending;
+        public double SpendBeforeTax { get; set; }
         public SpendingRecord(DateTime date, double amount, double fundAdded, double dividentsOut, double dividentsIn, double withdrawVal, double monthlySpending) : this()
         {
             this.Date = date;
