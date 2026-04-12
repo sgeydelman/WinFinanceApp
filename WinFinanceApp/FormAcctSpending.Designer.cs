@@ -143,9 +143,9 @@
             this.label5.AutoSize = true;
             this.label5.Location = new System.Drawing.Point(10, 246);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(78, 13);
+            this.label5.Size = new System.Drawing.Size(106, 13);
             this.label5.TabIndex = 1;
-            this.label5.Text = "WithdrawVal";
+            this.label5.Text = "Withdraw (Taxes)";
             // 
             // label4
             // 
